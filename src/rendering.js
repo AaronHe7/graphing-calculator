@@ -17,10 +17,10 @@ let draw = new Draw(canvas);
 let view = {
   xScale: 4,
   yScale: 4,
-  xMin: -22,
-  xMax: 22,
-  yMin: -22,
-  yMax: 22
+  xMin: -22.5,
+  xMax: 22.5,
+  yMin: -22.5,
+  yMax: 22.5
 }
 
 // Units to px
@@ -39,13 +39,58 @@ function roundScale(scale) {
   }
 }
 
-// Find scale with about 5 tick marks on x and y axis
+// Find a scale with about 10 tick marks on x and y axis
 function findAutoScale() {
+  let xScale = view.xScale;
+  let yScale = view.yScale;
+
+  let windowLength = (view.xMax - view.xMin)/xScale;
+  let windowHeight = (view.yMax - view.yMin)/yScale;
+  while (windowLength > 12) {
+    xScale *= 2;
+    windowLength = (view.xMax - view.xMin)/xScale;
+  }
+  while (windowLength < 4) {
+    xScale /= 2;
+    windowLength = (view.xMax - view.xMin)/xScale;
+  }
+  while (windowHeight > 12) {
+    yScale *= 2;
+    windowHeight = (view.yMax - view.yMin)/yScale;
+  }
+  while (windowHeight < 4) {
+    yScale /= 2;
+    windowHeight = (view.yMax - view.yMin)/yScale;
+  }
+  return {xScale, yScale};
+}
+
+function drawGridLines() {
+  ctx.lineWidth = canvas.scale;
+  let xTickRange = {
+    min: Math.ceil(view.xMin/view.xScale),
+    max: Math.floor(view.xMax/view.xScale)
+  }
+  let yTickRange = {
+    min: Math.ceil(view.yMin/view.yScale),
+    max: Math.floor(view.yMax/view.yScale)
+  }
+  for (let i = xTickRange.min; i <= xTickRange.max; i++) {
+    if (i == 0) continue;
+    let xDraw = toPixelCoord(i * view.xScale, 0).x
+    let yDraw = toPixelCoord(0, 0).y;
+    draw.line(xDraw, 0, xDraw, canvas.height, 'lightgray');
+  }
+  for (let i = yTickRange.min; i <= yTickRange.max; i++) {
+    if (i == 0) continue;
+    let xDraw = toPixelCoord(0, 0).x
+    let yDraw = toPixelCoord(0, i * view.yScale).y;
+    draw.line(0, yDraw, canvas.width, yDraw, 'lightgray');
+  }
 }
 
 // Draws axes and grid ticks
 function drawAxes() {
-  draw.rect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'black';
   ctx.lineWidth = 1.5 * canvas.scale;
   // y axis
@@ -68,8 +113,6 @@ function drawAxes() {
     let xDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
     let xDraw = toPixelCoord(i * view.xScale, 0).x
     let yDraw = toPixelCoord(0, 0).y;
-    // grid lines
-    draw.line(xDraw, 0, xDraw, canvas.height, 'lightgray');
     // ticks and labels
     draw.line(xDraw, yDraw + 5 * canvas.scale, xDraw, yDraw - 5 * canvas.scale);
     draw.text(xDisplayValue, xDraw, yDraw + 15 * canvas.scale);
@@ -86,11 +129,9 @@ function drawAxes() {
     if (i == 0) continue;
     ctx.textAlign = 'end';
 
-    let yDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
+    let yDisplayValue = parseFloat((i * view.yScale).toPrecision(4));
     let xDraw = toPixelCoord(0, 0).x
     let yDraw = toPixelCoord(0, i * view.yScale).y;
-    // grid lines
-    draw.line(0, yDraw, canvas.width, yDraw, 'lightgray');
     // ticks and labels
     draw.line(xDraw - 5 * canvas.scale, yDraw, xDraw + 5 * canvas.scale, yDraw);
     draw.text(yDisplayValue, xDraw - 10 * canvas.scale, yDraw);
@@ -99,7 +140,12 @@ function drawAxes() {
 
 
 function render() {
+  let autoScale = findAutoScale();
+  view.xScale = autoScale.xScale;
+  view.yScale = autoScale.yScale
+  draw.rect(0, 0, canvas.width, canvas.height);
+  drawGridLines();
   drawAxes();
 }
 
-export {canvas, ctx, draw, render, view, toPixelCoord}
+export {canvas, ctx, draw, render, view, toPixelCoord, findAutoScale}
