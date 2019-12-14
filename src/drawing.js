@@ -21,6 +21,11 @@ Draw.prototype.text = function(string, x, y, size = 10 * canvas.scale) {
   this.ctx.fillText(string, x, y);
 }
 
+Draw.prototype.rect = function(x, y, width, height, color = 'white') {
+  this.ctx.fillStyle = color;
+  this.ctx.fillRect(x, y, width, height);
+}
+
 function colorCircle(centerX, centerY, radius, color = 'black') {
   this.ctx.fillStyle = fillColor;
   this.ctx.beginPath();

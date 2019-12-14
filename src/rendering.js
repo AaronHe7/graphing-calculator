@@ -4,6 +4,9 @@ let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
 // Increase canvas resolution
+canvas.trueHeight = canvas.height;
+canvas.trueWidth = canvas.width;
+
 canvas.scale = 2;
 canvas.style.width = canvas.width + 'px';
 canvas.style.height = canvas.height + 'px';
@@ -11,7 +14,7 @@ canvas.width *= canvas.scale;
 canvas.height *= canvas.scale;
 
 let draw = new Draw(canvas);
-let window = {
+let view = {
   xScale: 4,
   yScale: 4,
   xMin: -22,
@@ -20,9 +23,10 @@ let window = {
   yMax: 22
 }
 
+// Units to px
 function toPixelCoord(x, y) {
-  let pixelX = (x - window.xMin)/(window.xMax - window.xMin) * canvas.width;
-  let pixelY = (window.yMax - y)/(window.yMax - window.yMin) * canvas.width;
+  let pixelX = (x - view.xMin)/(view.xMax - view.xMin) * canvas.width;
+  let pixelY = (view.yMax - y)/(view.yMax - view.yMin) * canvas.width;
   return {x: pixelX, y: pixelY};
 }
 
@@ -41,6 +45,8 @@ function findAutoScale() {
 
 // Draws axes and grid ticks
 function drawAxes() {
+  draw.rect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'black';
   ctx.lineWidth = 1.5 * canvas.scale;
   // y axis
   draw.line(0, toPixelCoord(0, 0).y, canvas.width, toPixelCoord(0, 0).y);
@@ -51,16 +57,16 @@ function drawAxes() {
   ctx.textBaseline = 'middle';
   // ex: min: -2, max: 3, signifies 2 ticks right of x axis, and 3 ticks left
   let xTickRange = {
-    min: Math.ceil(window.xMin/window.xScale),
-    max: Math.floor(window.xMax/window.xScale)
+    min: Math.ceil(view.xMin/view.xScale),
+    max: Math.floor(view.xMax/view.xScale)
   }
 
   for (let i = xTickRange.min; i <= xTickRange.max; i++) {
     ctx.textAlign = 'center';
 
     if (i == 0) continue;
-    let xDisplayValue = parseFloat((i * window.xScale).toPrecision(4));
-    let xDraw = toPixelCoord(i * window.xScale, 0).x
+    let xDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
+    let xDraw = toPixelCoord(i * view.xScale, 0).x
     let yDraw = toPixelCoord(0, 0).y;
     // grid lines
     draw.line(xDraw, 0, xDraw, canvas.height, 'lightgray');
@@ -72,17 +78,17 @@ function drawAxes() {
   // ticks on y axis
   // ex: min: -2, max: 3, signifies 2 ticks above y axis, and 3 ticks below
   let yTickRange = {
-    min: Math.ceil(window.yMin/window.yScale),
-    max: Math.floor(window.yMax/window.yScale)
+    min: Math.ceil(view.yMin/view.yScale),
+    max: Math.floor(view.yMax/view.yScale)
   }
 
   for (let i = yTickRange.min; i <= yTickRange.max; i++) {
     if (i == 0) continue;
     ctx.textAlign = 'end';
 
-    let yDisplayValue = parseFloat((i * window.xScale).toPrecision(4));
+    let yDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
     let xDraw = toPixelCoord(0, 0).x
-    let yDraw = toPixelCoord(0, i * window.yScale).y;
+    let yDraw = toPixelCoord(0, i * view.yScale).y;
     // grid lines
     draw.line(0, yDraw, canvas.width, yDraw, 'lightgray');
     // ticks and labels
@@ -96,4 +102,4 @@ function render() {
   drawAxes();
 }
 
-export {render}
+export {canvas, ctx, draw, render, view, toPixelCoord}
