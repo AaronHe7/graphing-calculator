@@ -1,0 +1,49 @@
+body {
+  padding: 0;
+  margin: 0;
+  font-family: Tahoma;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  background-color: lightgray;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.title {
+  font-size: 25px;
+}
+
+header img {
+  height: 50px;
+  width: 50px;
+  margin: 0 20px;
+}
+
+.subtitle {
+  font-size: 10px;
+}
+
+.tab {
+  margin: 0 20px;
+}
+
+.calculator {
+  display: flex;
+}
+
+.functions {
+  margin: 0 50px;
+}
+
+.functions > input {
+  padding: 5px;
+}
+
+.functions > button {
+  margin: 10px 0;
+  padding: 5px;
+}
