@@ -26,11 +26,12 @@ function eventHandling() {
     draggedPoint = mousePos(e);
     isDragging = true;
     let currentPos = mousePos(e);
-    console.log(toUnitCoord(currentPos.x, currentPos.y));
   });
+
   document.addEventListener('mouseup', function() {
     isDragging = false;
   });
+
   // Handles dragging; moves window opposite of dragged direction
   canvas.addEventListener('mousemove', function(e) {
     if (isDragging) {
@@ -76,6 +77,11 @@ function eventHandling() {
     render();
     e.preventDefault();
   });
+
+  document.querySelector('.functions > button').addEventListener('click', function() {
+    view.function = document.querySelector('.functions > input[name="y1"]').value;
+    render();
+  })
 }
 
 export { eventHandling }

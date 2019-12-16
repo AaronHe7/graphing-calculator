@@ -1,4 +1,5 @@
 import { Draw } from './drawing.js';
+import { parseFunction } from './functionParsing.js'
 
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
@@ -20,8 +21,10 @@ let view = {
   xMin: -22.5,
   xMax: 22.5,
   yMin: -22.5,
-  yMax: 22.5
+  yMax: 22.5,
+  function: ''
 }
+let expression = '';
 
 // Units to px
 function toPixelCoord(x, y) {
@@ -139,6 +142,18 @@ function drawAxes() {
 }
 
 
+function drawGraph(f, color = 'black') {
+  let expr = parseFunction(f);
+  let precision = 1000;
+  for (let i = 0; i < precision; i++) {
+    let currentX = view.xMin + i/precision * (view.xMax - view.xMin);
+    let nextX = view.xMin + (i + 1) * (view.xMax - view.xMin)/precision;
+    let currentY = expr.evaluate({ x: currentX });
+    let nextY = expr.evaluate({ x: nextX });
+    draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
+  }
+}
+
 function render() {
   let autoScale = findAutoScale();
   view.xScale = autoScale.xScale;
@@ -146,6 +161,9 @@ function render() {
   draw.rect(0, 0, canvas.width, canvas.height);
   drawGridLines();
   drawAxes();
+  if (view.function) {
+    drawGraph(view.function, 'blue');
+  }
 }
 
 export {canvas, ctx, draw, render, view, toPixelCoord, findAutoScale}
