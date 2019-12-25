@@ -79,7 +79,10 @@ function eventHandling() {
   });
 
   document.querySelector('.functions > button').addEventListener('click', function() {
-    view.function = document.querySelector('.functions > input[name="y1"]').value;
+    view.functions.y1 = {}
+    view.functions.y1.expression = document.querySelector('.functions input[name="y1"]').value;
+    view.functions.y1.color = document.querySelector('.functions select[name="y1"]').value;
+    // console.log(view.functions.y1)
     render();
   })
 }

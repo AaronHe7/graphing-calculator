@@ -22,7 +22,7 @@ let view = {
   xMax: 22.5,
   yMin: -22.5,
   yMax: 22.5,
-  function: ''
+  functions: {}
 }
 let expression = '';
 
@@ -161,8 +161,8 @@ function render() {
   draw.rect(0, 0, canvas.width, canvas.height);
   drawGridLines();
   drawAxes();
-  if (view.function) {
-    drawGraph(view.function, 'blue');
+  for (let key in view.functions) {
+    drawGraph(view.functions[key].expression, view.functions[key].color)
   }
 }
 

@@ -1,4 +1,1922 @@
-!function(t){var e={};function n(r){if(e[r])return e[r].exports;var s=e[r]={i:r,l:!1,exports:{}};return t[r].call(s.exports,s,s.exports,n),s.l=!0,s.exports}n.m=t,n.c=e,n.d=function(t,e,r){n.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:r})},n.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},n.t=function(t,e){if(1&e&&(t=n(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var s in t)n.d(r,s,function(e){return t[e]}.bind(null,s));return r},n.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return n.d(e,"a",e),e},n.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},n.p="",n(n.s=1)}([function(t,e,n){"use strict";n.r(e),n.d(e,"Expression",(function(){return S})),n.d(e,"Parser",(function(){return Ft}));var r="INUMBER",s="IOP1",i="IOP2",o="IOP3",a="IVAR",p="IVARNAME",u="IFUNCALL",h="IFUNDEF",c="IEXPR",l="IEXPREVAL",f="IMEMBER",x="IENDSTATEMENT",y="IARRAY";function v(t,e){this.type=t,this.value=null!=e?e:0}function M(t){return new v(s,t)}function d(t){return new v(i,t)}function w(t){return new v(o,t)}function g(t,e,n){var v,M,d,w,A,T,k=[];if(E(t))return b(t,n);for(var O=t.length,S=0;S<O;S++){var C=t[S],N=C.type;if(N===r||N===p)k.push(C.value);else if(N===i)M=k.pop(),v=k.pop(),"and"===C.value?k.push(!!v&&!!g(M,e,n)):"or"===C.value?k.push(!!v||!!g(M,e,n)):"="===C.value?(w=e.binaryOps[C.value],k.push(w(v,g(M,e,n),n))):(w=e.binaryOps[C.value],k.push(w(b(v,n),b(M,n))));else if(N===o)d=k.pop(),M=k.pop(),v=k.pop(),"?"===C.value?k.push(g(v?M:d,e,n)):(w=e.ternaryOps[C.value],k.push(w(b(v,n),b(M,n),b(d,n))));else if(N===a)if(C.value in e.functions)k.push(e.functions[C.value]);else if(C.value in e.unaryOps&&e.parser.isOperatorEnabled(C.value))k.push(e.unaryOps[C.value]);else{var P=n[C.value];if(void 0===P)throw new Error("undefined variable: "+C.value);k.push(P)}else if(N===s)v=k.pop(),w=e.unaryOps[C.value],k.push(w(b(v,n)));else if(N===u){for(T=C.value,A=[];T-- >0;)A.unshift(b(k.pop(),n));if(!(w=k.pop()).apply||!w.call)throw new Error(w+" is not a function");k.push(w.apply(void 0,A))}else if(N===h)k.push(function(){for(var t=k.pop(),r=[],s=C.value;s-- >0;)r.unshift(k.pop());var i=k.pop(),o=function(){for(var s=Object.assign({},n),i=0,o=r.length;i<o;i++)s[r[i]]=arguments[i];return g(t,e,s)};return Object.defineProperty(o,"name",{value:i,writable:!1}),n[i]=o,o}());else if(N===c)k.push(m(C,e));else if(N===l)k.push(C);else if(N===f)v=k.pop(),k.push(v[C.value]);else if(N===x)k.pop();else{if(N!==y)throw new Error("invalid Expression");for(T=C.value,A=[];T-- >0;)A.unshift(k.pop());k.push(A)}}if(k.length>1)throw new Error("invalid Expression (parity)");return 0===k[0]?0:b(k[0],n)}function m(t,e,n){return E(t)?t:{type:l,value:function(n){return g(t.value,e,n)}}}function E(t){return t&&t.type===l}function b(t,e){return E(t)?t.value(e):t}function A(t,e){for(var n,l,v,M,d,w,g=[],m=0;m<t.length;m++){var E=t[m],b=E.type;if(b===r)"number"==typeof E.value&&E.value<0?g.push("("+E.value+")"):Array.isArray(E.value)?g.push("["+E.value.map(T).join(", ")+"]"):g.push(T(E.value));else if(b===i)l=g.pop(),n=g.pop(),M=E.value,e?"^"===M?g.push("Math.pow("+n+", "+l+")"):"and"===M?g.push("(!!"+n+" && !!"+l+")"):"or"===M?g.push("(!!"+n+" || !!"+l+")"):"||"===M?g.push("(function(a,b){ return Array.isArray(a) && Array.isArray(b) ? a.concat(b) : String(a) + String(b); }(("+n+"),("+l+")))"):"=="===M?g.push("("+n+" === "+l+")"):"!="===M?g.push("("+n+" !== "+l+")"):"["===M?g.push(n+"[("+l+") | 0]"):g.push("("+n+" "+M+" "+l+")"):"["===M?g.push(n+"["+l+"]"):g.push("("+n+" "+M+" "+l+")");else if(b===o){if(v=g.pop(),l=g.pop(),n=g.pop(),"?"!==(M=E.value))throw new Error("invalid Expression");g.push("("+n+" ? "+l+" : "+v+")")}else if(b===a||b===p)g.push(E.value);else if(b===s)n=g.pop(),"-"===(M=E.value)||"+"===M?g.push("("+M+n+")"):e?"not"===M?g.push("(!"+n+")"):"!"===M?g.push("fac("+n+")"):g.push(M+"("+n+")"):"!"===M?g.push("("+n+"!)"):g.push("("+M+" "+n+")");else if(b===u){for(w=E.value,d=[];w-- >0;)d.unshift(g.pop());M=g.pop(),g.push(M+"("+d.join(", ")+")")}else if(b===h){for(l=g.pop(),w=E.value,d=[];w-- >0;)d.unshift(g.pop());n=g.pop(),e?g.push("("+n+" = function("+d.join(", ")+") { return "+l+" })"):g.push("("+n+"("+d.join(", ")+") = "+l+")")}else if(b===f)n=g.pop(),g.push(n+"."+E.value);else if(b===y){for(w=E.value,d=[];w-- >0;)d.unshift(g.pop());g.push("["+d.join(", ")+"]")}else if(b===c)g.push("("+A(E.value,e)+")");else if(b!==x)throw new Error("invalid Expression")}return g.length>1&&(g=e?[g.join(",")]:[g.join(";")]),String(g[0])}function T(t){return"string"==typeof t?JSON.stringify(t).replace(/\u2028/g,"\\u2028").replace(/\u2029/g,"\\u2029"):t}function k(t,e){for(var n=0;n<t.length;n++)if(t[n]===e)return!0;return!1}function O(t,e,n){for(var r=!!(n=n||{}).withMembers,s=null,i=0;i<t.length;i++){var o=t[i];o.type===a||o.type===p?r||k(e,o.value)?null!==s?(k(e,s)||e.push(s),s=o.value):s=o.value:e.push(o.value):o.type===f&&r&&null!==s?s+="."+o.value:o.type===c?O(o.value,e,n):null!==s&&(k(e,s)||e.push(s),s=null)}null===s||k(e,s)||e.push(s)}function S(t,e){this.tokens=t,this.parser=e,this.unaryOps=e.unaryOps,this.binaryOps=e.binaryOps,this.ternaryOps=e.ternaryOps,this.functions=e.functions}v.prototype.toString=function(){switch(this.type){case r:case s:case i:case o:case a:case p:case x:return this.value;case u:return"CALL "+this.value;case h:return"DEF "+this.value;case y:return"ARRAY "+this.value;case f:return"."+this.value;default:return"Invalid Instruction"}},S.prototype.simplify=function(t){return t=t||{},new S(function t(e,n,u,h,l){for(var x,M,d,w,g=[],m=[],E=0;E<e.length;E++){var b=e[E],A=b.type;if(A===r||A===p)Array.isArray(b.value)?g.push.apply(g,t(b.value.map((function(t){return new v(r,t)})).concat(new v(y,b.value.length)),n,u,h,l)):g.push(b);else if(A===a&&l.hasOwnProperty(b.value))b=new v(r,l[b.value]),g.push(b);else if(A===i&&g.length>1)M=g.pop(),x=g.pop(),w=u[b.value],b=new v(r,w(x.value,M.value)),g.push(b);else if(A===o&&g.length>2)d=g.pop(),M=g.pop(),x=g.pop(),"?"===b.value?g.push(x.value?M.value:d.value):(w=h[b.value],b=new v(r,w(x.value,M.value,d.value)),g.push(b));else if(A===s&&g.length>0)x=g.pop(),w=n[b.value],b=new v(r,w(x.value)),g.push(b);else if(A===c){for(;g.length>0;)m.push(g.shift());m.push(new v(c,t(b.value,n,u,h,l)))}else if(A===f&&g.length>0)x=g.pop(),g.push(new v(r,x.value[b.value]));else{for(;g.length>0;)m.push(g.shift());m.push(b)}}for(;g.length>0;)m.push(g.shift());return m}(this.tokens,this.unaryOps,this.binaryOps,this.ternaryOps,t),this.parser)},S.prototype.substitute=function(t,e){return e instanceof S||(e=this.parser.parse(String(e))),new S(function t(e,n,r){for(var p=[],u=0;u<e.length;u++){var h=e[u],l=h.type;if(l===a&&h.value===n)for(var f=0;f<r.tokens.length;f++){var x,y=r.tokens[f];x=y.type===s?M(y.value):y.type===i?d(y.value):y.type===o?w(y.value):new v(y.type,y.value),p.push(x)}else l===c?p.push(new v(c,t(h.value,n,r))):p.push(h)}return p}(this.tokens,t,e),this.parser)},S.prototype.evaluate=function(t){return t=t||{},g(this.tokens,this,t)},S.prototype.toString=function(){return A(this.tokens,!1)},S.prototype.symbols=function(t){t=t||{};var e=[];return O(this.tokens,e,t),e},S.prototype.variables=function(t){t=t||{};var e=[];O(this.tokens,e,t);var n=this.functions;return e.filter((function(t){return!(t in n)}))},S.prototype.toJSFunction=function(t,e){var n=this,r=new Function(t,"with(this.functions) with (this.ternaryOps) with (this.binaryOps) with (this.unaryOps) { return "+A(this.simplify(e).tokens,!0)+"; }");return function(){return r.apply(n,arguments)}};var C="TOP",N="TPAREN";function P(t,e,n){this.type=t,this.value=e,this.index=n}function I(t,e){this.pos=0,this.current=null,this.unaryOps=t.unaryOps,this.binaryOps=t.binaryOps,this.ternaryOps=t.ternaryOps,this.consts=t.consts,this.expression=e,this.savedPosition=0,this.savedCurrent=null,this.options=t.options,this.parser=t}P.prototype.toString=function(){return this.type+": "+this.value},I.prototype.newToken=function(t,e,n){return new P(t,e,null!=n?n:this.pos)},I.prototype.save=function(){this.savedPosition=this.pos,this.savedCurrent=this.current},I.prototype.restore=function(){this.pos=this.savedPosition,this.current=this.savedCurrent},I.prototype.next=function(){return this.pos>=this.expression.length?this.newToken("TEOF","EOF"):this.isWhitespace()||this.isComment()?this.next():this.isRadixInteger()||this.isNumber()||this.isOperator()||this.isString()||this.isParen()||this.isBracket()||this.isComma()||this.isSemicolon()||this.isNamedOp()||this.isConst()||this.isName()?this.current:void this.parseError('Unknown character "'+this.expression.charAt(this.pos)+'"')},I.prototype.isString=function(){var t=!1,e=this.pos,n=this.expression.charAt(e);if("'"===n||'"'===n)for(var r=this.expression.indexOf(n,e+1);r>=0&&this.pos<this.expression.length;){if(this.pos=r+1,"\\"!==this.expression.charAt(r-1)){var s=this.expression.substring(e+1,r);this.current=this.newToken("TSTRING",this.unescape(s),e),t=!0;break}r=this.expression.indexOf(n,r+1)}return t},I.prototype.isParen=function(){var t=this.expression.charAt(this.pos);return("("===t||")"===t)&&(this.current=this.newToken(N,t),this.pos++,!0)},I.prototype.isBracket=function(){var t=this.expression.charAt(this.pos);return!("["!==t&&"]"!==t||!this.isOperatorEnabled("["))&&(this.current=this.newToken("TBRACKET",t),this.pos++,!0)},I.prototype.isComma=function(){return","===this.expression.charAt(this.pos)&&(this.current=this.newToken("TCOMMA",","),this.pos++,!0)},I.prototype.isSemicolon=function(){return";"===this.expression.charAt(this.pos)&&(this.current=this.newToken("TSEMICOLON",";"),this.pos++,!0)},I.prototype.isConst=function(){for(var t=this.pos,e=t;e<this.expression.length;e++){var n=this.expression.charAt(e);if(n.toUpperCase()===n.toLowerCase()&&(e===this.pos||"_"!==n&&"."!==n&&(n<"0"||n>"9")))break}if(e>t){var r=this.expression.substring(t,e);if(r in this.consts)return this.current=this.newToken("TNUMBER",this.consts[r]),this.pos+=r.length,!0}return!1},I.prototype.isNamedOp=function(){for(var t=this.pos,e=t;e<this.expression.length;e++){var n=this.expression.charAt(e);if(n.toUpperCase()===n.toLowerCase()&&(e===this.pos||"_"!==n&&(n<"0"||n>"9")))break}if(e>t){var r=this.expression.substring(t,e);if(this.isOperatorEnabled(r)&&(r in this.binaryOps||r in this.unaryOps||r in this.ternaryOps))return this.current=this.newToken(C,r),this.pos+=r.length,!0}return!1},I.prototype.isName=function(){for(var t=this.pos,e=t,n=!1;e<this.expression.length;e++){var r=this.expression.charAt(e);if(r.toUpperCase()===r.toLowerCase()){if(e===this.pos&&("$"===r||"_"===r)){"_"===r&&(n=!0);continue}if(e===this.pos||!n||"_"!==r&&(r<"0"||r>"9"))break}else n=!0}if(n){var s=this.expression.substring(t,e);return this.current=this.newToken("TNAME",s),this.pos+=s.length,!0}return!1},I.prototype.isWhitespace=function(){for(var t=!1,e=this.expression.charAt(this.pos);!(" "!==e&&"\t"!==e&&"\n"!==e&&"\r"!==e||(t=!0,this.pos++,this.pos>=this.expression.length));)e=this.expression.charAt(this.pos);return t};var F=/^[0-9a-f]{4}$/i;function R(t,e,n){this.parser=t,this.tokens=e,this.current=null,this.nextToken=null,this.next(),this.savedCurrent=null,this.savedNextToken=null,this.allowMemberAccess=!1!==n.allowMemberAccess}I.prototype.unescape=function(t){var e=t.indexOf("\\");if(e<0)return t;for(var n=t.substring(0,e);e>=0;){var r=t.charAt(++e);switch(r){case"'":n+="'";break;case'"':n+='"';break;case"\\":n+="\\";break;case"/":n+="/";break;case"b":n+="\b";break;case"f":n+="\f";break;case"n":n+="\n";break;case"r":n+="\r";break;case"t":n+="\t";break;case"u":var s=t.substring(e+1,e+5);F.test(s)||this.parseError("Illegal escape sequence: \\u"+s),n+=String.fromCharCode(parseInt(s,16)),e+=4;break;default:throw this.parseError('Illegal escape sequence: "\\'+r+'"')}++e;var i=t.indexOf("\\",e);n+=t.substring(e,i<0?t.length:i),e=i}return n},I.prototype.isComment=function(){return"/"===this.expression.charAt(this.pos)&&"*"===this.expression.charAt(this.pos+1)&&(this.pos=this.expression.indexOf("*/",this.pos)+2,1===this.pos&&(this.pos=this.expression.length),!0)},I.prototype.isRadixInteger=function(){var t,e,n=this.pos;if(n>=this.expression.length-2||"0"!==this.expression.charAt(n))return!1;if(++n,"x"===this.expression.charAt(n))t=16,e=/^[0-9a-f]$/i,++n;else{if("b"!==this.expression.charAt(n))return!1;t=2,e=/^[01]$/i,++n}for(var r=!1,s=n;n<this.expression.length;){var i=this.expression.charAt(n);if(!e.test(i))break;n++,r=!0}return r&&(this.current=this.newToken("TNUMBER",parseInt(this.expression.substring(s,n),t)),this.pos=n),r},I.prototype.isNumber=function(){for(var t,e=!1,n=this.pos,r=n,s=n,i=!1,o=!1;n<this.expression.length&&((t=this.expression.charAt(n))>="0"&&t<="9"||!i&&"."===t);)"."===t?i=!0:o=!0,n++,e=o;if(e&&(s=n),"e"===t||"E"===t){n++;for(var a=!0,p=!1;n<this.expression.length;){if(t=this.expression.charAt(n),!a||"+"!==t&&"-"!==t){if(!(t>="0"&&t<="9"))break;p=!0,a=!1}else a=!1;n++}p||(n=s)}return e?(this.current=this.newToken("TNUMBER",parseFloat(this.expression.substring(r,n))),this.pos=n):this.pos=s,e},I.prototype.isOperator=function(){var t=this.pos,e=this.expression.charAt(this.pos);if("+"===e||"-"===e||"*"===e||"/"===e||"%"===e||"^"===e||"?"===e||":"===e||"."===e)this.current=this.newToken(C,e);else if("∙"===e||"•"===e)this.current=this.newToken(C,"*");else if(">"===e)"="===this.expression.charAt(this.pos+1)?(this.current=this.newToken(C,">="),this.pos++):this.current=this.newToken(C,">");else if("<"===e)"="===this.expression.charAt(this.pos+1)?(this.current=this.newToken(C,"<="),this.pos++):this.current=this.newToken(C,"<");else if("|"===e){if("|"!==this.expression.charAt(this.pos+1))return!1;this.current=this.newToken(C,"||"),this.pos++}else if("="===e)"="===this.expression.charAt(this.pos+1)?(this.current=this.newToken(C,"=="),this.pos++):this.current=this.newToken(C,e);else{if("!"!==e)return!1;"="===this.expression.charAt(this.pos+1)?(this.current=this.newToken(C,"!="),this.pos++):this.current=this.newToken(C,e)}return this.pos++,!!this.isOperatorEnabled(this.current.value)||(this.pos=t,!1)},I.prototype.isOperatorEnabled=function(t){return this.parser.isOperatorEnabled(t)},I.prototype.getCoordinates=function(){var t,e=0,n=-1;do{e++,t=this.pos-n,n=this.expression.indexOf("\n",n+1)}while(n>=0&&n<this.pos);return{line:e,column:t}},I.prototype.parseError=function(t){var e=this.getCoordinates();throw new Error("parse error ["+e.line+":"+e.column+"]: "+t)},R.prototype.next=function(){return this.current=this.nextToken,this.nextToken=this.tokens.next()},R.prototype.tokenMatches=function(t,e){return void 0===e||(Array.isArray(e)?k(e,t.value):"function"==typeof e?e(t):t.value===e)},R.prototype.save=function(){this.savedCurrent=this.current,this.savedNextToken=this.nextToken,this.tokens.save()},R.prototype.restore=function(){this.tokens.restore(),this.current=this.savedCurrent,this.nextToken=this.savedNextToken},R.prototype.accept=function(t,e){return!(this.nextToken.type!==t||!this.tokenMatches(this.nextToken,e))&&(this.next(),!0)},R.prototype.expect=function(t,e){if(!this.accept(t,e)){var n=this.tokens.getCoordinates();throw new Error("parse error ["+n.line+":"+n.column+"]: Expected "+(e||t))}},R.prototype.parseAtom=function(t){var e=this.tokens.unaryOps;if(this.accept("TNAME")||this.accept(C,(function(t){return t.value in e})))t.push(new v(a,this.current.value));else if(this.accept("TNUMBER"))t.push(new v(r,this.current.value));else if(this.accept("TSTRING"))t.push(new v(r,this.current.value));else if(this.accept(N,"("))this.parseExpression(t),this.expect(N,")");else{if(!this.accept("TBRACKET","["))throw new Error("unexpected "+this.nextToken);if(this.accept("TBRACKET","]"))t.push(new v(y,0));else{var n=this.parseArrayList(t);t.push(new v(y,n))}}},R.prototype.parseExpression=function(t){var e=[];this.parseUntilEndStatement(t,e)||(this.parseVariableAssignmentExpression(e),this.parseUntilEndStatement(t,e)||this.pushExpression(t,e))},R.prototype.pushExpression=function(t,e){for(var n=0,r=e.length;n<r;n++)t.push(e[n])},R.prototype.parseUntilEndStatement=function(t,e){return!!this.accept("TSEMICOLON")&&(!this.nextToken||"TEOF"===this.nextToken.type||this.nextToken.type===N&&")"===this.nextToken.value||e.push(new v(x)),"TEOF"!==this.nextToken.type&&this.parseExpression(e),t.push(new v(c,e)),!0)},R.prototype.parseArrayList=function(t){for(var e=0;!this.accept("TBRACKET","]");)for(this.parseExpression(t),++e;this.accept("TCOMMA");)this.parseExpression(t),++e;return e},R.prototype.parseVariableAssignmentExpression=function(t){for(this.parseConditionalExpression(t);this.accept(C,"=");){var e=t.pop(),n=[],r=t.length-1;if(e.type!==u){if(e.type!==a&&e.type!==f)throw new Error("expected variable for assignment");this.parseVariableAssignmentExpression(n),t.push(new v(p,e.value)),t.push(new v(c,n)),t.push(d("="))}else{if(!this.tokens.isOperatorEnabled("()="))throw new Error("function definition is not permitted");for(var s=0,i=e.value+1;s<i;s++){var o=r-s;t[o].type===a&&(t[o]=new v(p,t[o].value))}this.parseVariableAssignmentExpression(n),t.push(new v(c,n)),t.push(new v(h,e.value))}}},R.prototype.parseConditionalExpression=function(t){for(this.parseOrExpression(t);this.accept(C,"?");){var e=[],n=[];this.parseConditionalExpression(e),this.expect(C,":"),this.parseConditionalExpression(n),t.push(new v(c,e)),t.push(new v(c,n)),t.push(w("?"))}},R.prototype.parseOrExpression=function(t){for(this.parseAndExpression(t);this.accept(C,"or");){var e=[];this.parseAndExpression(e),t.push(new v(c,e)),t.push(d("or"))}},R.prototype.parseAndExpression=function(t){for(this.parseComparison(t);this.accept(C,"and");){var e=[];this.parseComparison(e),t.push(new v(c,e)),t.push(d("and"))}};var L=["==","!=","<","<=",">=",">","in"];R.prototype.parseComparison=function(t){for(this.parseAddSub(t);this.accept(C,L);){var e=this.current;this.parseAddSub(t),t.push(d(e.value))}};var j=["+","-","||"];R.prototype.parseAddSub=function(t){for(this.parseTerm(t);this.accept(C,j);){var e=this.current;this.parseTerm(t),t.push(d(e.value))}};var B=["*","/","%"];function U(t,e){return Number(t)+Number(e)}function q(t,e){return t-e}function _(t,e){return t*e}function V(t,e){return t/e}function K(t,e){return t%e}function W(t,e){return Array.isArray(t)&&Array.isArray(e)?t.concat(e):""+t+e}function Y(t,e){return t===e}function D(t,e){return t!==e}function $(t,e){return t>e}function G(t,e){return t<e}function X(t,e){return t>=e}function H(t,e){return t<=e}function J(t,e){return Boolean(t&&e)}function z(t,e){return Boolean(t||e)}function Q(t,e){return k(e,t)}function Z(t){return(Math.exp(t)-Math.exp(-t))/2}function tt(t){return(Math.exp(t)+Math.exp(-t))/2}function et(t){return t===1/0?1:t===-1/0?-1:(Math.exp(t)-Math.exp(-t))/(Math.exp(t)+Math.exp(-t))}function nt(t){return t===-1/0?t:Math.log(t+Math.sqrt(t*t+1))}function rt(t){return Math.log(t+Math.sqrt(t*t-1))}function st(t){return Math.log((1+t)/(1-t))/2}function it(t){return Math.log(t)*Math.LOG10E}function ot(t){return-t}function at(t){return!t}function pt(t){return t<0?Math.ceil(t):Math.floor(t)}function ut(t){return Math.random()*(t||1)}function ht(t){return ft(t+1)}R.prototype.parseTerm=function(t){for(this.parseFactor(t);this.accept(C,B);){var e=this.current;this.parseFactor(t),t.push(d(e.value))}},R.prototype.parseFactor=function(t){var e=this.tokens.unaryOps;if(this.save(),this.accept(C,(function(t){return t.value in e}))){if("-"!==this.current.value&&"+"!==this.current.value){if(this.nextToken.type===N&&"("===this.nextToken.value)return this.restore(),void this.parseExponential(t);if("TSEMICOLON"===this.nextToken.type||"TCOMMA"===this.nextToken.type||"TEOF"===this.nextToken.type||this.nextToken.type===N&&")"===this.nextToken.value)return this.restore(),void this.parseAtom(t)}var n=this.current;this.parseFactor(t),t.push(M(n.value))}else this.parseExponential(t)},R.prototype.parseExponential=function(t){for(this.parsePostfixExpression(t);this.accept(C,"^");)this.parseFactor(t),t.push(d("^"))},R.prototype.parsePostfixExpression=function(t){for(this.parseFunctionCall(t);this.accept(C,"!");)t.push(M("!"))},R.prototype.parseFunctionCall=function(t){var e=this.tokens.unaryOps;if(this.accept(C,(function(t){return t.value in e}))){var n=this.current;this.parseAtom(t),t.push(M(n.value))}else for(this.parseMemberExpression(t);this.accept(N,"(");)if(this.accept(N,")"))t.push(new v(u,0));else{var r=this.parseArgumentList(t);t.push(new v(u,r))}},R.prototype.parseArgumentList=function(t){for(var e=0;!this.accept(N,")");)for(this.parseExpression(t),++e;this.accept("TCOMMA");)this.parseExpression(t),++e;return e},R.prototype.parseMemberExpression=function(t){for(this.parseAtom(t);this.accept(C,".")||this.accept("TBRACKET","[");){var e=this.current;if("."===e.value){if(!this.allowMemberAccess)throw new Error('unexpected ".", member access is not permitted');this.expect("TNAME"),t.push(new v(f,this.current.value))}else{if("["!==e.value)throw new Error("unexpected symbol: "+e.value);if(!this.tokens.isOperatorEnabled("["))throw new Error('unexpected "[]", arrays are disabled');this.parseExpression(t),this.expect("TBRACKET","]"),t.push(d("["))}}};var ct=4.7421875,lt=[.9999999999999971,57.15623566586292,-59.59796035547549,14.136097974741746,-.4919138160976202,3399464998481189e-20,4652362892704858e-20,-9837447530487956e-20,.0001580887032249125,-.00021026444172410488,.00021743961811521265,-.0001643181065367639,8441822398385275e-20,-26190838401581408e-21,36899182659531625e-22];function ft(t){var e,n;if(function(t){return isFinite(t)&&t===Math.round(t)}(t)){if(t<=0)return isFinite(t)?1/0:NaN;if(t>171)return 1/0;for(var r=t-2,s=t-1;r>1;)s*=r,r--;return 0===s&&(s=1),s}if(t<.5)return Math.PI/(Math.sin(Math.PI*t)*ft(1-t));if(t>=171.35)return 1/0;if(t>85){var i=t*t,o=i*t,a=o*t,p=a*t;return Math.sqrt(2*Math.PI/t)*Math.pow(t/Math.E,t)*(1+1/(12*t)+1/(288*i)-139/(51840*o)-571/(2488320*a)+163879/(209018880*p)+5246819/(75246796800*p*t))}--t,n=lt[0];for(var u=1;u<lt.length;++u)n+=lt[u]/(t+u);return e=t+ct+.5,Math.sqrt(2*Math.PI)*Math.pow(e,t+.5)*Math.exp(-e)*n}function xt(t){return Array.isArray(t)?t.length:String(t).length}function yt(){for(var t=0,e=0,n=0;n<arguments.length;n++){var r,s=Math.abs(arguments[n]);e<s?(t=t*(r=e/s)*r+1,e=s):t+=s>0?(r=s/e)*r:s}return e===1/0?1/0:e*Math.sqrt(t)}function vt(t,e,n){return t?e:n}function Mt(t,e){return void 0===e||0==+e?Math.round(t):(t=+t,e=-+e,isNaN(t)||"number"!=typeof e||e%1!=0?NaN:(t=t.toString().split("e"),+((t=(t=Math.round(+(t[0]+"e"+(t[1]?+t[1]-e:-e)))).toString().split("e"))[0]+"e"+(t[1]?+t[1]+e:e))))}function dt(t,e,n){return n&&(n[t]=e),e}function wt(t,e){return t[0|e]}function gt(t){return 1===arguments.length&&Array.isArray(t)?Math.max.apply(Math,t):Math.max.apply(Math,arguments)}function mt(t){return 1===arguments.length&&Array.isArray(t)?Math.min.apply(Math,t):Math.min.apply(Math,arguments)}function Et(t,e){if("function"!=typeof t)throw new Error("First argument to map is not a function");if(!Array.isArray(e))throw new Error("Second argument to map is not an array");return e.map((function(e,n){return t(e,n)}))}function bt(t,e,n){if("function"!=typeof t)throw new Error("First argument to fold is not a function");if(!Array.isArray(n))throw new Error("Second argument to fold is not an array");return n.reduce((function(e,n,r){return t(e,n,r)}),e)}function At(t,e){if("function"!=typeof t)throw new Error("First argument to filter is not a function");if(!Array.isArray(e))throw new Error("Second argument to filter is not an array");return e.filter((function(e,n){return t(e,n)}))}function Tt(t,e){if(!Array.isArray(e)&&"string"!=typeof e)throw new Error("Second argument to indexOf is not a string or array");return e.indexOf(t)}function kt(t,e){if(!Array.isArray(e))throw new Error("Second argument to join is not an array");return e.join(t)}function Ot(t){return(t>0)-(t<0)||+t}var St=1/3;function Ct(t){return t<0?-Math.pow(-t,St):Math.pow(t,St)}function Nt(t){return Math.exp(t)-1}function Pt(t){return Math.log(1+t)}function It(t){return Math.log(t)/Math.LN2}function Ft(t){this.options=t||{},this.unaryOps={sin:Math.sin,cos:Math.cos,tan:Math.tan,asin:Math.asin,acos:Math.acos,atan:Math.atan,sinh:Math.sinh||Z,cosh:Math.cosh||tt,tanh:Math.tanh||et,asinh:Math.asinh||nt,acosh:Math.acosh||rt,atanh:Math.atanh||st,sqrt:Math.sqrt,cbrt:Math.cbrt||Ct,log:Math.log,log2:Math.log2||It,ln:Math.log,lg:Math.log10||it,log10:Math.log10||it,expm1:Math.expm1||Nt,log1p:Math.log1p||Pt,abs:Math.abs,ceil:Math.ceil,floor:Math.floor,round:Math.round,trunc:Math.trunc||pt,"-":ot,"+":Number,exp:Math.exp,not:at,length:xt,"!":ht,sign:Math.sign||Ot},this.binaryOps={"+":U,"-":q,"*":_,"/":V,"%":K,"^":Math.pow,"||":W,"==":Y,"!=":D,">":$,"<":G,">=":X,"<=":H,and:J,or:z,in:Q,"=":dt,"[":wt},this.ternaryOps={"?":vt},this.functions={random:ut,fac:ht,min:mt,max:gt,hypot:Math.hypot||yt,pyt:Math.hypot||yt,pow:Math.pow,atan2:Math.atan2,if:vt,gamma:ft,roundTo:Mt,map:Et,fold:bt,filter:At,indexOf:Tt,join:kt},this.consts={E:Math.E,PI:Math.PI,true:!0,false:!1}}Ft.prototype.parse=function(t){var e=[],n=new R(this,new I(this,t),{allowMemberAccess:this.options.allowMemberAccess});return n.parseExpression(e),n.expect("TEOF","EOF"),new S(e,this)},Ft.prototype.evaluate=function(t,e){return this.parse(t).evaluate(e)};var Rt=new Ft;Ft.parse=function(t){return Rt.parse(t)},Ft.evaluate=function(t,e){return Rt.parse(t).evaluate(e)};var Lt={"+":"add","-":"subtract","*":"multiply","/":"divide","%":"remainder","^":"power","!":"factorial","<":"comparison",">":"comparison","<=":"comparison",">=":"comparison","==":"comparison","!=":"comparison","||":"concatenate",and:"logical",or:"logical",not:"logical","?":"conditional",":":"conditional","=":"assignment","[":"array","()=":"fndef"};Ft.prototype.isOperatorEnabled=function(t){var e=function(t){return Lt.hasOwnProperty(t)?Lt[t]:t}(t),n=this.options.operators||{};return!(e in n&&!n[e])};
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index.js");
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ "./node_modules/expr-eval/dist/index.mjs":
+/*!***********************************************!*\
+  !*** ./node_modules/expr-eval/dist/index.mjs ***!
+  \***********************************************/
+/*! exports provided: default, Expression, Parser */
+/***/ (function(__webpack_module__, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Expression", function() { return Expression; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Parser", function() { return Parser; });
+var INUMBER = 'INUMBER';
+var IOP1 = 'IOP1';
+var IOP2 = 'IOP2';
+var IOP3 = 'IOP3';
+var IVAR = 'IVAR';
+var IVARNAME = 'IVARNAME';
+var IFUNCALL = 'IFUNCALL';
+var IFUNDEF = 'IFUNDEF';
+var IEXPR = 'IEXPR';
+var IEXPREVAL = 'IEXPREVAL';
+var IMEMBER = 'IMEMBER';
+var IENDSTATEMENT = 'IENDSTATEMENT';
+var IARRAY = 'IARRAY';
+
+function Instruction(type, value) {
+  this.type = type;
+  this.value = (value !== undefined && value !== null) ? value : 0;
+}
+
+Instruction.prototype.toString = function () {
+  switch (this.type) {
+    case INUMBER:
+    case IOP1:
+    case IOP2:
+    case IOP3:
+    case IVAR:
+    case IVARNAME:
+    case IENDSTATEMENT:
+      return this.value;
+    case IFUNCALL:
+      return 'CALL ' + this.value;
+    case IFUNDEF:
+      return 'DEF ' + this.value;
+    case IARRAY:
+      return 'ARRAY ' + this.value;
+    case IMEMBER:
+      return '.' + this.value;
+    default:
+      return 'Invalid Instruction';
+  }
+};
+
+function unaryInstruction(value) {
+  return new Instruction(IOP1, value);
+}
+
+function binaryInstruction(value) {
+  return new Instruction(IOP2, value);
+}
+
+function ternaryInstruction(value) {
+  return new Instruction(IOP3, value);
+}
+
+function simplify(tokens, unaryOps, binaryOps, ternaryOps, values) {
+  var nstack = [];
+  var newexpression = [];
+  var n1, n2, n3;
+  var f;
+  for (var i = 0; i < tokens.length; i++) {
+    var item = tokens[i];
+    var type = item.type;
+    if (type === INUMBER || type === IVARNAME) {
+      if (Array.isArray(item.value)) {
+        nstack.push.apply(nstack, simplify(item.value.map(function (x) {
+          return new Instruction(INUMBER, x);
+        }).concat(new Instruction(IARRAY, item.value.length)), unaryOps, binaryOps, ternaryOps, values));
+      } else {
+        nstack.push(item);
+      }
+    } else if (type === IVAR && values.hasOwnProperty(item.value)) {
+      item = new Instruction(INUMBER, values[item.value]);
+      nstack.push(item);
+    } else if (type === IOP2 && nstack.length > 1) {
+      n2 = nstack.pop();
+      n1 = nstack.pop();
+      f = binaryOps[item.value];
+      item = new Instruction(INUMBER, f(n1.value, n2.value));
+      nstack.push(item);
+    } else if (type === IOP3 && nstack.length > 2) {
+      n3 = nstack.pop();
+      n2 = nstack.pop();
+      n1 = nstack.pop();
+      if (item.value === '?') {
+        nstack.push(n1.value ? n2.value : n3.value);
+      } else {
+        f = ternaryOps[item.value];
+        item = new Instruction(INUMBER, f(n1.value, n2.value, n3.value));
+        nstack.push(item);
+      }
+    } else if (type === IOP1 && nstack.length > 0) {
+      n1 = nstack.pop();
+      f = unaryOps[item.value];
+      item = new Instruction(INUMBER, f(n1.value));
+      nstack.push(item);
+    } else if (type === IEXPR) {
+      while (nstack.length > 0) {
+        newexpression.push(nstack.shift());
+      }
+      newexpression.push(new Instruction(IEXPR, simplify(item.value, unaryOps, binaryOps, ternaryOps, values)));
+    } else if (type === IMEMBER && nstack.length > 0) {
+      n1 = nstack.pop();
+      nstack.push(new Instruction(INUMBER, n1.value[item.value]));
+    } /* else if (type === IARRAY && nstack.length >= item.value) {
+      var length = item.value;
+      while (length-- > 0) {
+        newexpression.push(nstack.pop());
+      }
+      newexpression.push(new Instruction(IARRAY, item.value));
+    } */ else {
+      while (nstack.length > 0) {
+        newexpression.push(nstack.shift());
+      }
+      newexpression.push(item);
+    }
+  }
+  while (nstack.length > 0) {
+    newexpression.push(nstack.shift());
+  }
+  return newexpression;
+}
+
+function substitute(tokens, variable, expr) {
+  var newexpression = [];
+  for (var i = 0; i < tokens.length; i++) {
+    var item = tokens[i];
+    var type = item.type;
+    if (type === IVAR && item.value === variable) {
+      for (var j = 0; j < expr.tokens.length; j++) {
+        var expritem = expr.tokens[j];
+        var replitem;
+        if (expritem.type === IOP1) {
+          replitem = unaryInstruction(expritem.value);
+        } else if (expritem.type === IOP2) {
+          replitem = binaryInstruction(expritem.value);
+        } else if (expritem.type === IOP3) {
+          replitem = ternaryInstruction(expritem.value);
+        } else {
+          replitem = new Instruction(expritem.type, expritem.value);
+        }
+        newexpression.push(replitem);
+      }
+    } else if (type === IEXPR) {
+      newexpression.push(new Instruction(IEXPR, substitute(item.value, variable, expr)));
+    } else {
+      newexpression.push(item);
+    }
+  }
+  return newexpression;
+}
+
+function evaluate(tokens, expr, values) {
+  var nstack = [];
+  var n1, n2, n3;
+  var f, args, argCount;
+
+  if (isExpressionEvaluator(tokens)) {
+    return resolveExpression(tokens, values);
+  }
+
+  var numTokens = tokens.length;
+
+  for (var i = 0; i < numTokens; i++) {
+    var item = tokens[i];
+    var type = item.type;
+    if (type === INUMBER || type === IVARNAME) {
+      nstack.push(item.value);
+    } else if (type === IOP2) {
+      n2 = nstack.pop();
+      n1 = nstack.pop();
+      if (item.value === 'and') {
+        nstack.push(n1 ? !!evaluate(n2, expr, values) : false);
+      } else if (item.value === 'or') {
+        nstack.push(n1 ? true : !!evaluate(n2, expr, values));
+      } else if (item.value === '=') {
+        f = expr.binaryOps[item.value];
+        nstack.push(f(n1, evaluate(n2, expr, values), values));
+      } else {
+        f = expr.binaryOps[item.value];
+        nstack.push(f(resolveExpression(n1, values), resolveExpression(n2, values)));
+      }
+    } else if (type === IOP3) {
+      n3 = nstack.pop();
+      n2 = nstack.pop();
+      n1 = nstack.pop();
+      if (item.value === '?') {
+        nstack.push(evaluate(n1 ? n2 : n3, expr, values));
+      } else {
+        f = expr.ternaryOps[item.value];
+        nstack.push(f(resolveExpression(n1, values), resolveExpression(n2, values), resolveExpression(n3, values)));
+      }
+    } else if (type === IVAR) {
+      if (item.value in expr.functions) {
+        nstack.push(expr.functions[item.value]);
+      } else if (item.value in expr.unaryOps && expr.parser.isOperatorEnabled(item.value)) {
+        nstack.push(expr.unaryOps[item.value]);
+      } else {
+        var v = values[item.value];
+        if (v !== undefined) {
+          nstack.push(v);
+        } else {
+          throw new Error('undefined variable: ' + item.value);
+        }
+      }
+    } else if (type === IOP1) {
+      n1 = nstack.pop();
+      f = expr.unaryOps[item.value];
+      nstack.push(f(resolveExpression(n1, values)));
+    } else if (type === IFUNCALL) {
+      argCount = item.value;
+      args = [];
+      while (argCount-- > 0) {
+        args.unshift(resolveExpression(nstack.pop(), values));
+      }
+      f = nstack.pop();
+      if (f.apply && f.call) {
+        nstack.push(f.apply(undefined, args));
+      } else {
+        throw new Error(f + ' is not a function');
+      }
+    } else if (type === IFUNDEF) {
+      // Create closure to keep references to arguments and expression
+      nstack.push((function () {
+        var n2 = nstack.pop();
+        var args = [];
+        var argCount = item.value;
+        while (argCount-- > 0) {
+          args.unshift(nstack.pop());
+        }
+        var n1 = nstack.pop();
+        var f = function () {
+          var scope = Object.assign({}, values);
+          for (var i = 0, len = args.length; i < len; i++) {
+            scope[args[i]] = arguments[i];
+          }
+          return evaluate(n2, expr, scope);
+        };
+        // f.name = n1
+        Object.defineProperty(f, 'name', {
+          value: n1,
+          writable: false
+        });
+        values[n1] = f;
+        return f;
+      })());
+    } else if (type === IEXPR) {
+      nstack.push(createExpressionEvaluator(item, expr));
+    } else if (type === IEXPREVAL) {
+      nstack.push(item);
+    } else if (type === IMEMBER) {
+      n1 = nstack.pop();
+      nstack.push(n1[item.value]);
+    } else if (type === IENDSTATEMENT) {
+      nstack.pop();
+    } else if (type === IARRAY) {
+      argCount = item.value;
+      args = [];
+      while (argCount-- > 0) {
+        args.unshift(nstack.pop());
+      }
+      nstack.push(args);
+    } else {
+      throw new Error('invalid Expression');
+    }
+  }
+  if (nstack.length > 1) {
+    throw new Error('invalid Expression (parity)');
+  }
+  // Explicitly return zero to avoid test issues caused by -0
+  return nstack[0] === 0 ? 0 : resolveExpression(nstack[0], values);
+}
+
+function createExpressionEvaluator(token, expr, values) {
+  if (isExpressionEvaluator(token)) return token;
+  return {
+    type: IEXPREVAL,
+    value: function (scope) {
+      return evaluate(token.value, expr, scope);
+    }
+  };
+}
+
+function isExpressionEvaluator(n) {
+  return n && n.type === IEXPREVAL;
+}
+
+function resolveExpression(n, values) {
+  return isExpressionEvaluator(n) ? n.value(values) : n;
+}
+
+function expressionToString(tokens, toJS) {
+  var nstack = [];
+  var n1, n2, n3;
+  var f, args, argCount;
+  for (var i = 0; i < tokens.length; i++) {
+    var item = tokens[i];
+    var type = item.type;
+    if (type === INUMBER) {
+      if (typeof item.value === 'number' && item.value < 0) {
+        nstack.push('(' + item.value + ')');
+      } else if (Array.isArray(item.value)) {
+        nstack.push('[' + item.value.map(escapeValue).join(', ') + ']');
+      } else {
+        nstack.push(escapeValue(item.value));
+      }
+    } else if (type === IOP2) {
+      n2 = nstack.pop();
+      n1 = nstack.pop();
+      f = item.value;
+      if (toJS) {
+        if (f === '^') {
+          nstack.push('Math.pow(' + n1 + ', ' + n2 + ')');
+        } else if (f === 'and') {
+          nstack.push('(!!' + n1 + ' && !!' + n2 + ')');
+        } else if (f === 'or') {
+          nstack.push('(!!' + n1 + ' || !!' + n2 + ')');
+        } else if (f === '||') {
+          nstack.push('(function(a,b){ return Array.isArray(a) && Array.isArray(b) ? a.concat(b) : String(a) + String(b); }((' + n1 + '),(' + n2 + ')))');
+        } else if (f === '==') {
+          nstack.push('(' + n1 + ' === ' + n2 + ')');
+        } else if (f === '!=') {
+          nstack.push('(' + n1 + ' !== ' + n2 + ')');
+        } else if (f === '[') {
+          nstack.push(n1 + '[(' + n2 + ') | 0]');
+        } else {
+          nstack.push('(' + n1 + ' ' + f + ' ' + n2 + ')');
+        }
+      } else {
+        if (f === '[') {
+          nstack.push(n1 + '[' + n2 + ']');
+        } else {
+          nstack.push('(' + n1 + ' ' + f + ' ' + n2 + ')');
+        }
+      }
+    } else if (type === IOP3) {
+      n3 = nstack.pop();
+      n2 = nstack.pop();
+      n1 = nstack.pop();
+      f = item.value;
+      if (f === '?') {
+        nstack.push('(' + n1 + ' ? ' + n2 + ' : ' + n3 + ')');
+      } else {
+        throw new Error('invalid Expression');
+      }
+    } else if (type === IVAR || type === IVARNAME) {
+      nstack.push(item.value);
+    } else if (type === IOP1) {
+      n1 = nstack.pop();
+      f = item.value;
+      if (f === '-' || f === '+') {
+        nstack.push('(' + f + n1 + ')');
+      } else if (toJS) {
+        if (f === 'not') {
+          nstack.push('(' + '!' + n1 + ')');
+        } else if (f === '!') {
+          nstack.push('fac(' + n1 + ')');
+        } else {
+          nstack.push(f + '(' + n1 + ')');
+        }
+      } else if (f === '!') {
+        nstack.push('(' + n1 + '!)');
+      } else {
+        nstack.push('(' + f + ' ' + n1 + ')');
+      }
+    } else if (type === IFUNCALL) {
+      argCount = item.value;
+      args = [];
+      while (argCount-- > 0) {
+        args.unshift(nstack.pop());
+      }
+      f = nstack.pop();
+      nstack.push(f + '(' + args.join(', ') + ')');
+    } else if (type === IFUNDEF) {
+      n2 = nstack.pop();
+      argCount = item.value;
+      args = [];
+      while (argCount-- > 0) {
+        args.unshift(nstack.pop());
+      }
+      n1 = nstack.pop();
+      if (toJS) {
+        nstack.push('(' + n1 + ' = function(' + args.join(', ') + ') { return ' + n2 + ' })');
+      } else {
+        nstack.push('(' + n1 + '(' + args.join(', ') + ') = ' + n2 + ')');
+      }
+    } else if (type === IMEMBER) {
+      n1 = nstack.pop();
+      nstack.push(n1 + '.' + item.value);
+    } else if (type === IARRAY) {
+      argCount = item.value;
+      args = [];
+      while (argCount-- > 0) {
+        args.unshift(nstack.pop());
+      }
+      nstack.push('[' + args.join(', ') + ']');
+    } else if (type === IEXPR) {
+      nstack.push('(' + expressionToString(item.value, toJS) + ')');
+    } else if (type === IENDSTATEMENT) ; else {
+      throw new Error('invalid Expression');
+    }
+  }
+  if (nstack.length > 1) {
+    if (toJS) {
+      nstack = [ nstack.join(',') ];
+    } else {
+      nstack = [ nstack.join(';') ];
+    }
+  }
+  return String(nstack[0]);
+}
+
+function escapeValue(v) {
+  if (typeof v === 'string') {
+    return JSON.stringify(v).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+  }
+  return v;
+}
+
+function contains(array, obj) {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i] === obj) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getSymbols(tokens, symbols, options) {
+  options = options || {};
+  var withMembers = !!options.withMembers;
+  var prevVar = null;
+
+  for (var i = 0; i < tokens.length; i++) {
+    var item = tokens[i];
+    if (item.type === IVAR || item.type === IVARNAME) {
+      if (!withMembers && !contains(symbols, item.value)) {
+        symbols.push(item.value);
+      } else if (prevVar !== null) {
+        if (!contains(symbols, prevVar)) {
+          symbols.push(prevVar);
+        }
+        prevVar = item.value;
+      } else {
+        prevVar = item.value;
+      }
+    } else if (item.type === IMEMBER && withMembers && prevVar !== null) {
+      prevVar += '.' + item.value;
+    } else if (item.type === IEXPR) {
+      getSymbols(item.value, symbols, options);
+    } else if (prevVar !== null) {
+      if (!contains(symbols, prevVar)) {
+        symbols.push(prevVar);
+      }
+      prevVar = null;
+    }
+  }
+
+  if (prevVar !== null && !contains(symbols, prevVar)) {
+    symbols.push(prevVar);
+  }
+}
+
+function Expression(tokens, parser) {
+  this.tokens = tokens;
+  this.parser = parser;
+  this.unaryOps = parser.unaryOps;
+  this.binaryOps = parser.binaryOps;
+  this.ternaryOps = parser.ternaryOps;
+  this.functions = parser.functions;
+}
+
+Expression.prototype.simplify = function (values) {
+  values = values || {};
+  return new Expression(simplify(this.tokens, this.unaryOps, this.binaryOps, this.ternaryOps, values), this.parser);
+};
+
+Expression.prototype.substitute = function (variable, expr) {
+  if (!(expr instanceof Expression)) {
+    expr = this.parser.parse(String(expr));
+  }
+
+  return new Expression(substitute(this.tokens, variable, expr), this.parser);
+};
+
+Expression.prototype.evaluate = function (values) {
+  values = values || {};
+  return evaluate(this.tokens, this, values);
+};
+
+Expression.prototype.toString = function () {
+  return expressionToString(this.tokens, false);
+};
+
+Expression.prototype.symbols = function (options) {
+  options = options || {};
+  var vars = [];
+  getSymbols(this.tokens, vars, options);
+  return vars;
+};
+
+Expression.prototype.variables = function (options) {
+  options = options || {};
+  var vars = [];
+  getSymbols(this.tokens, vars, options);
+  var functions = this.functions;
+  return vars.filter(function (name) {
+    return !(name in functions);
+  });
+};
+
+Expression.prototype.toJSFunction = function (param, variables) {
+  var expr = this;
+  var f = new Function(param, 'with(this.functions) with (this.ternaryOps) with (this.binaryOps) with (this.unaryOps) { return ' + expressionToString(this.simplify(variables).tokens, true) + '; }'); // eslint-disable-line no-new-func
+  return function () {
+    return f.apply(expr, arguments);
+  };
+};
+
+var TEOF = 'TEOF';
+var TOP = 'TOP';
+var TNUMBER = 'TNUMBER';
+var TSTRING = 'TSTRING';
+var TPAREN = 'TPAREN';
+var TBRACKET = 'TBRACKET';
+var TCOMMA = 'TCOMMA';
+var TNAME = 'TNAME';
+var TSEMICOLON = 'TSEMICOLON';
+
+function Token(type, value, index) {
+  this.type = type;
+  this.value = value;
+  this.index = index;
+}
+
+Token.prototype.toString = function () {
+  return this.type + ': ' + this.value;
+};
+
+function TokenStream(parser, expression) {
+  this.pos = 0;
+  this.current = null;
+  this.unaryOps = parser.unaryOps;
+  this.binaryOps = parser.binaryOps;
+  this.ternaryOps = parser.ternaryOps;
+  this.consts = parser.consts;
+  this.expression = expression;
+  this.savedPosition = 0;
+  this.savedCurrent = null;
+  this.options = parser.options;
+  this.parser = parser;
+}
+
+TokenStream.prototype.newToken = function (type, value, pos) {
+  return new Token(type, value, pos != null ? pos : this.pos);
+};
+
+TokenStream.prototype.save = function () {
+  this.savedPosition = this.pos;
+  this.savedCurrent = this.current;
+};
+
+TokenStream.prototype.restore = function () {
+  this.pos = this.savedPosition;
+  this.current = this.savedCurrent;
+};
+
+TokenStream.prototype.next = function () {
+  if (this.pos >= this.expression.length) {
+    return this.newToken(TEOF, 'EOF');
+  }
+
+  if (this.isWhitespace() || this.isComment()) {
+    return this.next();
+  } else if (this.isRadixInteger() ||
+      this.isNumber() ||
+      this.isOperator() ||
+      this.isString() ||
+      this.isParen() ||
+      this.isBracket() ||
+      this.isComma() ||
+      this.isSemicolon() ||
+      this.isNamedOp() ||
+      this.isConst() ||
+      this.isName()) {
+    return this.current;
+  } else {
+    this.parseError('Unknown character "' + this.expression.charAt(this.pos) + '"');
+  }
+};
+
+TokenStream.prototype.isString = function () {
+  var r = false;
+  var startPos = this.pos;
+  var quote = this.expression.charAt(startPos);
+
+  if (quote === '\'' || quote === '"') {
+    var index = this.expression.indexOf(quote, startPos + 1);
+    while (index >= 0 && this.pos < this.expression.length) {
+      this.pos = index + 1;
+      if (this.expression.charAt(index - 1) !== '\\') {
+        var rawString = this.expression.substring(startPos + 1, index);
+        this.current = this.newToken(TSTRING, this.unescape(rawString), startPos);
+        r = true;
+        break;
+      }
+      index = this.expression.indexOf(quote, index + 1);
+    }
+  }
+  return r;
+};
+
+TokenStream.prototype.isParen = function () {
+  var c = this.expression.charAt(this.pos);
+  if (c === '(' || c === ')') {
+    this.current = this.newToken(TPAREN, c);
+    this.pos++;
+    return true;
+  }
+  return false;
+};
+
+TokenStream.prototype.isBracket = function () {
+  var c = this.expression.charAt(this.pos);
+  if ((c === '[' || c === ']') && this.isOperatorEnabled('[')) {
+    this.current = this.newToken(TBRACKET, c);
+    this.pos++;
+    return true;
+  }
+  return false;
+};
+
+TokenStream.prototype.isComma = function () {
+  var c = this.expression.charAt(this.pos);
+  if (c === ',') {
+    this.current = this.newToken(TCOMMA, ',');
+    this.pos++;
+    return true;
+  }
+  return false;
+};
+
+TokenStream.prototype.isSemicolon = function () {
+  var c = this.expression.charAt(this.pos);
+  if (c === ';') {
+    this.current = this.newToken(TSEMICOLON, ';');
+    this.pos++;
+    return true;
+  }
+  return false;
+};
+
+TokenStream.prototype.isConst = function () {
+  var startPos = this.pos;
+  var i = startPos;
+  for (; i < this.expression.length; i++) {
+    var c = this.expression.charAt(i);
+    if (c.toUpperCase() === c.toLowerCase()) {
+      if (i === this.pos || (c !== '_' && c !== '.' && (c < '0' || c > '9'))) {
+        break;
+      }
+    }
+  }
+  if (i > startPos) {
+    var str = this.expression.substring(startPos, i);
+    if (str in this.consts) {
+      this.current = this.newToken(TNUMBER, this.consts[str]);
+      this.pos += str.length;
+      return true;
+    }
+  }
+  return false;
+};
+
+TokenStream.prototype.isNamedOp = function () {
+  var startPos = this.pos;
+  var i = startPos;
+  for (; i < this.expression.length; i++) {
+    var c = this.expression.charAt(i);
+    if (c.toUpperCase() === c.toLowerCase()) {
+      if (i === this.pos || (c !== '_' && (c < '0' || c > '9'))) {
+        break;
+      }
+    }
+  }
+  if (i > startPos) {
+    var str = this.expression.substring(startPos, i);
+    if (this.isOperatorEnabled(str) && (str in this.binaryOps || str in this.unaryOps || str in this.ternaryOps)) {
+      this.current = this.newToken(TOP, str);
+      this.pos += str.length;
+      return true;
+    }
+  }
+  return false;
+};
+
+TokenStream.prototype.isName = function () {
+  var startPos = this.pos;
+  var i = startPos;
+  var hasLetter = false;
+  for (; i < this.expression.length; i++) {
+    var c = this.expression.charAt(i);
+    if (c.toUpperCase() === c.toLowerCase()) {
+      if (i === this.pos && (c === '$' || c === '_')) {
+        if (c === '_') {
+          hasLetter = true;
+        }
+        continue;
+      } else if (i === this.pos || !hasLetter || (c !== '_' && (c < '0' || c > '9'))) {
+        break;
+      }
+    } else {
+      hasLetter = true;
+    }
+  }
+  if (hasLetter) {
+    var str = this.expression.substring(startPos, i);
+    this.current = this.newToken(TNAME, str);
+    this.pos += str.length;
+    return true;
+  }
+  return false;
+};
+
+TokenStream.prototype.isWhitespace = function () {
+  var r = false;
+  var c = this.expression.charAt(this.pos);
+  while (c === ' ' || c === '\t' || c === '\n' || c === '\r') {
+    r = true;
+    this.pos++;
+    if (this.pos >= this.expression.length) {
+      break;
+    }
+    c = this.expression.charAt(this.pos);
+  }
+  return r;
+};
+
+var codePointPattern = /^[0-9a-f]{4}$/i;
+
+TokenStream.prototype.unescape = function (v) {
+  var index = v.indexOf('\\');
+  if (index < 0) {
+    return v;
+  }
+
+  var buffer = v.substring(0, index);
+  while (index >= 0) {
+    var c = v.charAt(++index);
+    switch (c) {
+      case '\'':
+        buffer += '\'';
+        break;
+      case '"':
+        buffer += '"';
+        break;
+      case '\\':
+        buffer += '\\';
+        break;
+      case '/':
+        buffer += '/';
+        break;
+      case 'b':
+        buffer += '\b';
+        break;
+      case 'f':
+        buffer += '\f';
+        break;
+      case 'n':
+        buffer += '\n';
+        break;
+      case 'r':
+        buffer += '\r';
+        break;
+      case 't':
+        buffer += '\t';
+        break;
+      case 'u':
+        // interpret the following 4 characters as the hex of the unicode code point
+        var codePoint = v.substring(index + 1, index + 5);
+        if (!codePointPattern.test(codePoint)) {
+          this.parseError('Illegal escape sequence: \\u' + codePoint);
+        }
+        buffer += String.fromCharCode(parseInt(codePoint, 16));
+        index += 4;
+        break;
+      default:
+        throw this.parseError('Illegal escape sequence: "\\' + c + '"');
+    }
+    ++index;
+    var backslash = v.indexOf('\\', index);
+    buffer += v.substring(index, backslash < 0 ? v.length : backslash);
+    index = backslash;
+  }
+
+  return buffer;
+};
+
+TokenStream.prototype.isComment = function () {
+  var c = this.expression.charAt(this.pos);
+  if (c === '/' && this.expression.charAt(this.pos + 1) === '*') {
+    this.pos = this.expression.indexOf('*/', this.pos) + 2;
+    if (this.pos === 1) {
+      this.pos = this.expression.length;
+    }
+    return true;
+  }
+  return false;
+};
+
+TokenStream.prototype.isRadixInteger = function () {
+  var pos = this.pos;
+
+  if (pos >= this.expression.length - 2 || this.expression.charAt(pos) !== '0') {
+    return false;
+  }
+  ++pos;
+
+  var radix;
+  var validDigit;
+  if (this.expression.charAt(pos) === 'x') {
+    radix = 16;
+    validDigit = /^[0-9a-f]$/i;
+    ++pos;
+  } else if (this.expression.charAt(pos) === 'b') {
+    radix = 2;
+    validDigit = /^[01]$/i;
+    ++pos;
+  } else {
+    return false;
+  }
+
+  var valid = false;
+  var startPos = pos;
+
+  while (pos < this.expression.length) {
+    var c = this.expression.charAt(pos);
+    if (validDigit.test(c)) {
+      pos++;
+      valid = true;
+    } else {
+      break;
+    }
+  }
+
+  if (valid) {
+    this.current = this.newToken(TNUMBER, parseInt(this.expression.substring(startPos, pos), radix));
+    this.pos = pos;
+  }
+  return valid;
+};
+
+TokenStream.prototype.isNumber = function () {
+  var valid = false;
+  var pos = this.pos;
+  var startPos = pos;
+  var resetPos = pos;
+  var foundDot = false;
+  var foundDigits = false;
+  var c;
+
+  while (pos < this.expression.length) {
+    c = this.expression.charAt(pos);
+    if ((c >= '0' && c <= '9') || (!foundDot && c === '.')) {
+      if (c === '.') {
+        foundDot = true;
+      } else {
+        foundDigits = true;
+      }
+      pos++;
+      valid = foundDigits;
+    } else {
+      break;
+    }
+  }
+
+  if (valid) {
+    resetPos = pos;
+  }
+
+  if (c === 'e' || c === 'E') {
+    pos++;
+    var acceptSign = true;
+    var validExponent = false;
+    while (pos < this.expression.length) {
+      c = this.expression.charAt(pos);
+      if (acceptSign && (c === '+' || c === '-')) {
+        acceptSign = false;
+      } else if (c >= '0' && c <= '9') {
+        validExponent = true;
+        acceptSign = false;
+      } else {
+        break;
+      }
+      pos++;
+    }
+
+    if (!validExponent) {
+      pos = resetPos;
+    }
+  }
+
+  if (valid) {
+    this.current = this.newToken(TNUMBER, parseFloat(this.expression.substring(startPos, pos)));
+    this.pos = pos;
+  } else {
+    this.pos = resetPos;
+  }
+  return valid;
+};
+
+TokenStream.prototype.isOperator = function () {
+  var startPos = this.pos;
+  var c = this.expression.charAt(this.pos);
+
+  if (c === '+' || c === '-' || c === '*' || c === '/' || c === '%' || c === '^' || c === '?' || c === ':' || c === '.') {
+    this.current = this.newToken(TOP, c);
+  } else if (c === '∙' || c === '•') {
+    this.current = this.newToken(TOP, '*');
+  } else if (c === '>') {
+    if (this.expression.charAt(this.pos + 1) === '=') {
+      this.current = this.newToken(TOP, '>=');
+      this.pos++;
+    } else {
+      this.current = this.newToken(TOP, '>');
+    }
+  } else if (c === '<') {
+    if (this.expression.charAt(this.pos + 1) === '=') {
+      this.current = this.newToken(TOP, '<=');
+      this.pos++;
+    } else {
+      this.current = this.newToken(TOP, '<');
+    }
+  } else if (c === '|') {
+    if (this.expression.charAt(this.pos + 1) === '|') {
+      this.current = this.newToken(TOP, '||');
+      this.pos++;
+    } else {
+      return false;
+    }
+  } else if (c === '=') {
+    if (this.expression.charAt(this.pos + 1) === '=') {
+      this.current = this.newToken(TOP, '==');
+      this.pos++;
+    } else {
+      this.current = this.newToken(TOP, c);
+    }
+  } else if (c === '!') {
+    if (this.expression.charAt(this.pos + 1) === '=') {
+      this.current = this.newToken(TOP, '!=');
+      this.pos++;
+    } else {
+      this.current = this.newToken(TOP, c);
+    }
+  } else {
+    return false;
+  }
+  this.pos++;
+
+  if (this.isOperatorEnabled(this.current.value)) {
+    return true;
+  } else {
+    this.pos = startPos;
+    return false;
+  }
+};
+
+TokenStream.prototype.isOperatorEnabled = function (op) {
+  return this.parser.isOperatorEnabled(op);
+};
+
+TokenStream.prototype.getCoordinates = function () {
+  var line = 0;
+  var column;
+  var newline = -1;
+  do {
+    line++;
+    column = this.pos - newline;
+    newline = this.expression.indexOf('\n', newline + 1);
+  } while (newline >= 0 && newline < this.pos);
+
+  return {
+    line: line,
+    column: column
+  };
+};
+
+TokenStream.prototype.parseError = function (msg) {
+  var coords = this.getCoordinates();
+  throw new Error('parse error [' + coords.line + ':' + coords.column + ']: ' + msg);
+};
+
+function ParserState(parser, tokenStream, options) {
+  this.parser = parser;
+  this.tokens = tokenStream;
+  this.current = null;
+  this.nextToken = null;
+  this.next();
+  this.savedCurrent = null;
+  this.savedNextToken = null;
+  this.allowMemberAccess = options.allowMemberAccess !== false;
+}
+
+ParserState.prototype.next = function () {
+  this.current = this.nextToken;
+  return (this.nextToken = this.tokens.next());
+};
+
+ParserState.prototype.tokenMatches = function (token, value) {
+  if (typeof value === 'undefined') {
+    return true;
+  } else if (Array.isArray(value)) {
+    return contains(value, token.value);
+  } else if (typeof value === 'function') {
+    return value(token);
+  } else {
+    return token.value === value;
+  }
+};
+
+ParserState.prototype.save = function () {
+  this.savedCurrent = this.current;
+  this.savedNextToken = this.nextToken;
+  this.tokens.save();
+};
+
+ParserState.prototype.restore = function () {
+  this.tokens.restore();
+  this.current = this.savedCurrent;
+  this.nextToken = this.savedNextToken;
+};
+
+ParserState.prototype.accept = function (type, value) {
+  if (this.nextToken.type === type && this.tokenMatches(this.nextToken, value)) {
+    this.next();
+    return true;
+  }
+  return false;
+};
+
+ParserState.prototype.expect = function (type, value) {
+  if (!this.accept(type, value)) {
+    var coords = this.tokens.getCoordinates();
+    throw new Error('parse error [' + coords.line + ':' + coords.column + ']: Expected ' + (value || type));
+  }
+};
+
+ParserState.prototype.parseAtom = function (instr) {
+  var unaryOps = this.tokens.unaryOps;
+  function isPrefixOperator(token) {
+    return token.value in unaryOps;
+  }
+
+  if (this.accept(TNAME) || this.accept(TOP, isPrefixOperator)) {
+    instr.push(new Instruction(IVAR, this.current.value));
+  } else if (this.accept(TNUMBER)) {
+    instr.push(new Instruction(INUMBER, this.current.value));
+  } else if (this.accept(TSTRING)) {
+    instr.push(new Instruction(INUMBER, this.current.value));
+  } else if (this.accept(TPAREN, '(')) {
+    this.parseExpression(instr);
+    this.expect(TPAREN, ')');
+  } else if (this.accept(TBRACKET, '[')) {
+    if (this.accept(TBRACKET, ']')) {
+      instr.push(new Instruction(IARRAY, 0));
+    } else {
+      var argCount = this.parseArrayList(instr);
+      instr.push(new Instruction(IARRAY, argCount));
+    }
+  } else {
+    throw new Error('unexpected ' + this.nextToken);
+  }
+};
+
+ParserState.prototype.parseExpression = function (instr) {
+  var exprInstr = [];
+  if (this.parseUntilEndStatement(instr, exprInstr)) {
+    return;
+  }
+  this.parseVariableAssignmentExpression(exprInstr);
+  if (this.parseUntilEndStatement(instr, exprInstr)) {
+    return;
+  }
+  this.pushExpression(instr, exprInstr);
+};
+
+ParserState.prototype.pushExpression = function (instr, exprInstr) {
+  for (var i = 0, len = exprInstr.length; i < len; i++) {
+    instr.push(exprInstr[i]);
+  }
+};
+
+ParserState.prototype.parseUntilEndStatement = function (instr, exprInstr) {
+  if (!this.accept(TSEMICOLON)) return false;
+  if (this.nextToken && this.nextToken.type !== TEOF && !(this.nextToken.type === TPAREN && this.nextToken.value === ')')) {
+    exprInstr.push(new Instruction(IENDSTATEMENT));
+  }
+  if (this.nextToken.type !== TEOF) {
+    this.parseExpression(exprInstr);
+  }
+  instr.push(new Instruction(IEXPR, exprInstr));
+  return true;
+};
+
+ParserState.prototype.parseArrayList = function (instr) {
+  var argCount = 0;
+
+  while (!this.accept(TBRACKET, ']')) {
+    this.parseExpression(instr);
+    ++argCount;
+    while (this.accept(TCOMMA)) {
+      this.parseExpression(instr);
+      ++argCount;
+    }
+  }
+
+  return argCount;
+};
+
+ParserState.prototype.parseVariableAssignmentExpression = function (instr) {
+  this.parseConditionalExpression(instr);
+  while (this.accept(TOP, '=')) {
+    var varName = instr.pop();
+    var varValue = [];
+    var lastInstrIndex = instr.length - 1;
+    if (varName.type === IFUNCALL) {
+      if (!this.tokens.isOperatorEnabled('()=')) {
+        throw new Error('function definition is not permitted');
+      }
+      for (var i = 0, len = varName.value + 1; i < len; i++) {
+        var index = lastInstrIndex - i;
+        if (instr[index].type === IVAR) {
+          instr[index] = new Instruction(IVARNAME, instr[index].value);
+        }
+      }
+      this.parseVariableAssignmentExpression(varValue);
+      instr.push(new Instruction(IEXPR, varValue));
+      instr.push(new Instruction(IFUNDEF, varName.value));
+      continue;
+    }
+    if (varName.type !== IVAR && varName.type !== IMEMBER) {
+      throw new Error('expected variable for assignment');
+    }
+    this.parseVariableAssignmentExpression(varValue);
+    instr.push(new Instruction(IVARNAME, varName.value));
+    instr.push(new Instruction(IEXPR, varValue));
+    instr.push(binaryInstruction('='));
+  }
+};
+
+ParserState.prototype.parseConditionalExpression = function (instr) {
+  this.parseOrExpression(instr);
+  while (this.accept(TOP, '?')) {
+    var trueBranch = [];
+    var falseBranch = [];
+    this.parseConditionalExpression(trueBranch);
+    this.expect(TOP, ':');
+    this.parseConditionalExpression(falseBranch);
+    instr.push(new Instruction(IEXPR, trueBranch));
+    instr.push(new Instruction(IEXPR, falseBranch));
+    instr.push(ternaryInstruction('?'));
+  }
+};
+
+ParserState.prototype.parseOrExpression = function (instr) {
+  this.parseAndExpression(instr);
+  while (this.accept(TOP, 'or')) {
+    var falseBranch = [];
+    this.parseAndExpression(falseBranch);
+    instr.push(new Instruction(IEXPR, falseBranch));
+    instr.push(binaryInstruction('or'));
+  }
+};
+
+ParserState.prototype.parseAndExpression = function (instr) {
+  this.parseComparison(instr);
+  while (this.accept(TOP, 'and')) {
+    var trueBranch = [];
+    this.parseComparison(trueBranch);
+    instr.push(new Instruction(IEXPR, trueBranch));
+    instr.push(binaryInstruction('and'));
+  }
+};
+
+var COMPARISON_OPERATORS = ['==', '!=', '<', '<=', '>=', '>', 'in'];
+
+ParserState.prototype.parseComparison = function (instr) {
+  this.parseAddSub(instr);
+  while (this.accept(TOP, COMPARISON_OPERATORS)) {
+    var op = this.current;
+    this.parseAddSub(instr);
+    instr.push(binaryInstruction(op.value));
+  }
+};
+
+var ADD_SUB_OPERATORS = ['+', '-', '||'];
+
+ParserState.prototype.parseAddSub = function (instr) {
+  this.parseTerm(instr);
+  while (this.accept(TOP, ADD_SUB_OPERATORS)) {
+    var op = this.current;
+    this.parseTerm(instr);
+    instr.push(binaryInstruction(op.value));
+  }
+};
+
+var TERM_OPERATORS = ['*', '/', '%'];
+
+ParserState.prototype.parseTerm = function (instr) {
+  this.parseFactor(instr);
+  while (this.accept(TOP, TERM_OPERATORS)) {
+    var op = this.current;
+    this.parseFactor(instr);
+    instr.push(binaryInstruction(op.value));
+  }
+};
+
+ParserState.prototype.parseFactor = function (instr) {
+  var unaryOps = this.tokens.unaryOps;
+  function isPrefixOperator(token) {
+    return token.value in unaryOps;
+  }
+
+  this.save();
+  if (this.accept(TOP, isPrefixOperator)) {
+    if (this.current.value !== '-' && this.current.value !== '+') {
+      if (this.nextToken.type === TPAREN && this.nextToken.value === '(') {
+        this.restore();
+        this.parseExponential(instr);
+        return;
+      } else if (this.nextToken.type === TSEMICOLON || this.nextToken.type === TCOMMA || this.nextToken.type === TEOF || (this.nextToken.type === TPAREN && this.nextToken.value === ')')) {
+        this.restore();
+        this.parseAtom(instr);
+        return;
+      }
+    }
+
+    var op = this.current;
+    this.parseFactor(instr);
+    instr.push(unaryInstruction(op.value));
+  } else {
+    this.parseExponential(instr);
+  }
+};
+
+ParserState.prototype.parseExponential = function (instr) {
+  this.parsePostfixExpression(instr);
+  while (this.accept(TOP, '^')) {
+    this.parseFactor(instr);
+    instr.push(binaryInstruction('^'));
+  }
+};
+
+ParserState.prototype.parsePostfixExpression = function (instr) {
+  this.parseFunctionCall(instr);
+  while (this.accept(TOP, '!')) {
+    instr.push(unaryInstruction('!'));
+  }
+};
+
+ParserState.prototype.parseFunctionCall = function (instr) {
+  var unaryOps = this.tokens.unaryOps;
+  function isPrefixOperator(token) {
+    return token.value in unaryOps;
+  }
+
+  if (this.accept(TOP, isPrefixOperator)) {
+    var op = this.current;
+    this.parseAtom(instr);
+    instr.push(unaryInstruction(op.value));
+  } else {
+    this.parseMemberExpression(instr);
+    while (this.accept(TPAREN, '(')) {
+      if (this.accept(TPAREN, ')')) {
+        instr.push(new Instruction(IFUNCALL, 0));
+      } else {
+        var argCount = this.parseArgumentList(instr);
+        instr.push(new Instruction(IFUNCALL, argCount));
+      }
+    }
+  }
+};
+
+ParserState.prototype.parseArgumentList = function (instr) {
+  var argCount = 0;
+
+  while (!this.accept(TPAREN, ')')) {
+    this.parseExpression(instr);
+    ++argCount;
+    while (this.accept(TCOMMA)) {
+      this.parseExpression(instr);
+      ++argCount;
+    }
+  }
+
+  return argCount;
+};
+
+ParserState.prototype.parseMemberExpression = function (instr) {
+  this.parseAtom(instr);
+  while (this.accept(TOP, '.') || this.accept(TBRACKET, '[')) {
+    var op = this.current;
+
+    if (op.value === '.') {
+      if (!this.allowMemberAccess) {
+        throw new Error('unexpected ".", member access is not permitted');
+      }
+
+      this.expect(TNAME);
+      instr.push(new Instruction(IMEMBER, this.current.value));
+    } else if (op.value === '[') {
+      if (!this.tokens.isOperatorEnabled('[')) {
+        throw new Error('unexpected "[]", arrays are disabled');
+      }
+
+      this.parseExpression(instr);
+      this.expect(TBRACKET, ']');
+      instr.push(binaryInstruction('['));
+    } else {
+      throw new Error('unexpected symbol: ' + op.value);
+    }
+  }
+};
+
+function add(a, b) {
+  return Number(a) + Number(b);
+}
+
+function sub(a, b) {
+  return a - b;
+}
+
+function mul(a, b) {
+  return a * b;
+}
+
+function div(a, b) {
+  return a / b;
+}
+
+function mod(a, b) {
+  return a % b;
+}
+
+function concat(a, b) {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.concat(b);
+  }
+  return '' + a + b;
+}
+
+function equal(a, b) {
+  return a === b;
+}
+
+function notEqual(a, b) {
+  return a !== b;
+}
+
+function greaterThan(a, b) {
+  return a > b;
+}
+
+function lessThan(a, b) {
+  return a < b;
+}
+
+function greaterThanEqual(a, b) {
+  return a >= b;
+}
+
+function lessThanEqual(a, b) {
+  return a <= b;
+}
+
+function andOperator(a, b) {
+  return Boolean(a && b);
+}
+
+function orOperator(a, b) {
+  return Boolean(a || b);
+}
+
+function inOperator(a, b) {
+  return contains(b, a);
+}
+
+function sinh(a) {
+  return ((Math.exp(a) - Math.exp(-a)) / 2);
+}
+
+function cosh(a) {
+  return ((Math.exp(a) + Math.exp(-a)) / 2);
+}
+
+function tanh(a) {
+  if (a === Infinity) return 1;
+  if (a === -Infinity) return -1;
+  return (Math.exp(a) - Math.exp(-a)) / (Math.exp(a) + Math.exp(-a));
+}
+
+function asinh(a) {
+  if (a === -Infinity) return a;
+  return Math.log(a + Math.sqrt((a * a) + 1));
+}
+
+function acosh(a) {
+  return Math.log(a + Math.sqrt((a * a) - 1));
+}
+
+function atanh(a) {
+  return (Math.log((1 + a) / (1 - a)) / 2);
+}
+
+function log10(a) {
+  return Math.log(a) * Math.LOG10E;
+}
+
+function neg(a) {
+  return -a;
+}
+
+function not(a) {
+  return !a;
+}
+
+function trunc(a) {
+  return a < 0 ? Math.ceil(a) : Math.floor(a);
+}
+
+function random(a) {
+  return Math.random() * (a || 1);
+}
+
+function factorial(a) { // a!
+  return gamma(a + 1);
+}
+
+function isInteger(value) {
+  return isFinite(value) && (value === Math.round(value));
+}
+
+var GAMMA_G = 4.7421875;
+var GAMMA_P = [
+  0.99999999999999709182,
+  57.156235665862923517, -59.597960355475491248,
+  14.136097974741747174, -0.49191381609762019978,
+  0.33994649984811888699e-4,
+  0.46523628927048575665e-4, -0.98374475304879564677e-4,
+  0.15808870322491248884e-3, -0.21026444172410488319e-3,
+  0.21743961811521264320e-3, -0.16431810653676389022e-3,
+  0.84418223983852743293e-4, -0.26190838401581408670e-4,
+  0.36899182659531622704e-5
+];
+
+// Gamma function from math.js
+function gamma(n) {
+  var t, x;
+
+  if (isInteger(n)) {
+    if (n <= 0) {
+      return isFinite(n) ? Infinity : NaN;
+    }
+
+    if (n > 171) {
+      return Infinity; // Will overflow
+    }
+
+    var value = n - 2;
+    var res = n - 1;
+    while (value > 1) {
+      res *= value;
+      value--;
+    }
+
+    if (res === 0) {
+      res = 1; // 0! is per definition 1
+    }
+
+    return res;
+  }
+
+  if (n < 0.5) {
+    return Math.PI / (Math.sin(Math.PI * n) * gamma(1 - n));
+  }
+
+  if (n >= 171.35) {
+    return Infinity; // will overflow
+  }
+
+  if (n > 85.0) { // Extended Stirling Approx
+    var twoN = n * n;
+    var threeN = twoN * n;
+    var fourN = threeN * n;
+    var fiveN = fourN * n;
+    return Math.sqrt(2 * Math.PI / n) * Math.pow((n / Math.E), n) *
+      (1 + (1 / (12 * n)) + (1 / (288 * twoN)) - (139 / (51840 * threeN)) -
+      (571 / (2488320 * fourN)) + (163879 / (209018880 * fiveN)) +
+      (5246819 / (75246796800 * fiveN * n)));
+  }
+
+  --n;
+  x = GAMMA_P[0];
+  for (var i = 1; i < GAMMA_P.length; ++i) {
+    x += GAMMA_P[i] / (n + i);
+  }
+
+  t = n + GAMMA_G + 0.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
+}
+
+function stringOrArrayLength(s) {
+  if (Array.isArray(s)) {
+    return s.length;
+  }
+  return String(s).length;
+}
+
+function hypot() {
+  var sum = 0;
+  var larg = 0;
+  for (var i = 0; i < arguments.length; i++) {
+    var arg = Math.abs(arguments[i]);
+    var div;
+    if (larg < arg) {
+      div = larg / arg;
+      sum = (sum * div * div) + 1;
+      larg = arg;
+    } else if (arg > 0) {
+      div = arg / larg;
+      sum += div * div;
+    } else {
+      sum += arg;
+    }
+  }
+  return larg === Infinity ? Infinity : larg * Math.sqrt(sum);
+}
+
+function condition(cond, yep, nope) {
+  return cond ? yep : nope;
+}
+
+/**
+* Decimal adjustment of a number.
+* From @escopecz.
+*
+* @param {Number} value The number.
+* @param {Integer} exp  The exponent (the 10 logarithm of the adjustment base).
+* @return {Number} The adjusted value.
+*/
+function roundTo(value, exp) {
+  // If the exp is undefined or zero...
+  if (typeof exp === 'undefined' || +exp === 0) {
+    return Math.round(value);
+  }
+  value = +value;
+  exp = -(+exp);
+  // If the value is not a number or the exp is not an integer...
+  if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+    return NaN;
+  }
+  // Shift
+  value = value.toString().split('e');
+  value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+  // Shift back
+  value = value.toString().split('e');
+  return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+}
+
+function setVar(name, value, variables) {
+  if (variables) variables[name] = value;
+  return value;
+}
+
+function arrayIndex(array, index) {
+  return array[index | 0];
+}
+
+function max(array) {
+  if (arguments.length === 1 && Array.isArray(array)) {
+    return Math.max.apply(Math, array);
+  } else {
+    return Math.max.apply(Math, arguments);
+  }
+}
+
+function min(array) {
+  if (arguments.length === 1 && Array.isArray(array)) {
+    return Math.min.apply(Math, array);
+  } else {
+    return Math.min.apply(Math, arguments);
+  }
+}
+
+function arrayMap(f, a) {
+  if (typeof f !== 'function') {
+    throw new Error('First argument to map is not a function');
+  }
+  if (!Array.isArray(a)) {
+    throw new Error('Second argument to map is not an array');
+  }
+  return a.map(function (x, i) {
+    return f(x, i);
+  });
+}
+
+function arrayFold(f, init, a) {
+  if (typeof f !== 'function') {
+    throw new Error('First argument to fold is not a function');
+  }
+  if (!Array.isArray(a)) {
+    throw new Error('Second argument to fold is not an array');
+  }
+  return a.reduce(function (acc, x, i) {
+    return f(acc, x, i);
+  }, init);
+}
+
+function arrayFilter(f, a) {
+  if (typeof f !== 'function') {
+    throw new Error('First argument to filter is not a function');
+  }
+  if (!Array.isArray(a)) {
+    throw new Error('Second argument to filter is not an array');
+  }
+  return a.filter(function (x, i) {
+    return f(x, i);
+  });
+}
+
+function stringOrArrayIndexOf(target, s) {
+  if (!(Array.isArray(s) || typeof s === 'string')) {
+    throw new Error('Second argument to indexOf is not a string or array');
+  }
+
+  return s.indexOf(target);
+}
+
+function arrayJoin(sep, a) {
+  if (!Array.isArray(a)) {
+    throw new Error('Second argument to join is not an array');
+  }
+
+  return a.join(sep);
+}
+
+function sign(x) {
+  return ((x > 0) - (x < 0)) || +x;
+}
+
+var ONE_THIRD = 1/3;
+function cbrt(x) {
+  return x < 0 ? -Math.pow(-x, ONE_THIRD) : Math.pow(x, ONE_THIRD);
+}
+
+function expm1(x) {
+  return Math.exp(x) - 1;
+}
+
+function log1p(x) {
+  return Math.log(1 + x);
+}
+
+function log2(x) {
+  return Math.log(x) / Math.LN2;
+}
+
+function Parser(options) {
+  this.options = options || {};
+  this.unaryOps = {
+    sin: Math.sin,
+    cos: Math.cos,
+    tan: Math.tan,
+    asin: Math.asin,
+    acos: Math.acos,
+    atan: Math.atan,
+    sinh: Math.sinh || sinh,
+    cosh: Math.cosh || cosh,
+    tanh: Math.tanh || tanh,
+    asinh: Math.asinh || asinh,
+    acosh: Math.acosh || acosh,
+    atanh: Math.atanh || atanh,
+    sqrt: Math.sqrt,
+    cbrt: Math.cbrt || cbrt,
+    log: Math.log,
+    log2: Math.log2 || log2,
+    ln: Math.log,
+    lg: Math.log10 || log10,
+    log10: Math.log10 || log10,
+    expm1: Math.expm1 || expm1,
+    log1p: Math.log1p || log1p,
+    abs: Math.abs,
+    ceil: Math.ceil,
+    floor: Math.floor,
+    round: Math.round,
+    trunc: Math.trunc || trunc,
+    '-': neg,
+    '+': Number,
+    exp: Math.exp,
+    not: not,
+    length: stringOrArrayLength,
+    '!': factorial,
+    sign: Math.sign || sign
+  };
+
+  this.binaryOps = {
+    '+': add,
+    '-': sub,
+    '*': mul,
+    '/': div,
+    '%': mod,
+    '^': Math.pow,
+    '||': concat,
+    '==': equal,
+    '!=': notEqual,
+    '>': greaterThan,
+    '<': lessThan,
+    '>=': greaterThanEqual,
+    '<=': lessThanEqual,
+    and: andOperator,
+    or: orOperator,
+    'in': inOperator,
+    '=': setVar,
+    '[': arrayIndex
+  };
+
+  this.ternaryOps = {
+    '?': condition
+  };
+
+  this.functions = {
+    random: random,
+    fac: factorial,
+    min: min,
+    max: max,
+    hypot: Math.hypot || hypot,
+    pyt: Math.hypot || hypot, // backward compat
+    pow: Math.pow,
+    atan2: Math.atan2,
+    'if': condition,
+    gamma: gamma,
+    roundTo: roundTo,
+    map: arrayMap,
+    fold: arrayFold,
+    filter: arrayFilter,
+    indexOf: stringOrArrayIndexOf,
+    join: arrayJoin
+  };
+
+  this.consts = {
+    E: Math.E,
+    PI: Math.PI,
+    'true': true,
+    'false': false
+  };
+}
+
+Parser.prototype.parse = function (expr) {
+  var instr = [];
+  var parserState = new ParserState(
+    this,
+    new TokenStream(this, expr),
+    { allowMemberAccess: this.options.allowMemberAccess }
+  );
+
+  parserState.parseExpression(instr);
+  parserState.expect(TEOF, 'EOF');
+
+  return new Expression(instr, this);
+};
+
+Parser.prototype.evaluate = function (expr, variables) {
+  return this.parse(expr).evaluate(variables);
+};
+
+var sharedParser = new Parser();
+
+Parser.parse = function (expr) {
+  return sharedParser.parse(expr);
+};
+
+Parser.evaluate = function (expr, variables) {
+  return sharedParser.parse(expr).evaluate(variables);
+};
+
+var optionNameMap = {
+  '+': 'add',
+  '-': 'subtract',
+  '*': 'multiply',
+  '/': 'divide',
+  '%': 'remainder',
+  '^': 'power',
+  '!': 'factorial',
+  '<': 'comparison',
+  '>': 'comparison',
+  '<=': 'comparison',
+  '>=': 'comparison',
+  '==': 'comparison',
+  '!=': 'comparison',
+  '||': 'concatenate',
+  'and': 'logical',
+  'or': 'logical',
+  'not': 'logical',
+  '?': 'conditional',
+  ':': 'conditional',
+  '=': 'assignment',
+  '[': 'array',
+  '()=': 'fndef'
+};
+
+function getOptionName(op) {
+  return optionNameMap.hasOwnProperty(op) ? optionNameMap[op] : op;
+}
+
+Parser.prototype.isOperatorEnabled = function (op) {
+  var optionName = getOptionName(op);
+  var operators = this.options.operators || {};
+
+  return !(optionName in operators) || !!operators[optionName];
+};
+
 /*!
  Based on ndef.parser, by Raphael Graf(r@undefined.ch)
  http://www.undefined.ch/mparser/index.html
@@ -9,4 +1927,419 @@
  to acknowledge its original source. If you feel like it, I enjoy hearing about projects that use my code,
  but don't feel like you have to let me know or ask permission.
 */
-var jt={Parser:Ft,Expression:S};e.default=jt},function(t,e,n){"use strict";function r(t){this.canvas=t,this.ctx=t.getContext("2d")}n.r(e),r.prototype.fill=function(t){this.canvas.fillStyle=t},r.prototype.line=function(t,e,n,r,s="black"){this.ctx.beginPath(),this.ctx.moveTo(t,e),this.ctx.lineTo(n,r),this.ctx.strokeStyle=s,this.ctx.stroke()},r.prototype.text=function(t,e,n,r=10*canvas.scale){this.ctx.font=r+"px Arial",this.ctx.fillText(t,e,n)},r.prototype.rect=function(t,e,n,r,s="white"){this.ctx.fillStyle=s,this.ctx.fillRect(t,e,n,r)};var s=new(0,n(0).Parser);let i=document.getElementById("canvas"),o=i.getContext("2d");i.trueHeight=i.height,i.trueWidth=i.width,i.scale=2,i.style.width=i.width+"px",i.style.height=i.height+"px",i.width*=i.scale,i.height*=i.scale;let a=new r(i),p={xScale:4,yScale:4,xMin:-22.5,xMax:22.5,yMin:-22.5,yMax:22.5,function:""};function u(t,e){return{x:(t-p.xMin)/(p.xMax-p.xMin)*i.width,y:(p.yMax-e)/(p.yMax-p.yMin)*i.width}}function h(t,e="black"){let n=function(t){return s.parse(t)}(t);for(let t=0;t<1e3;t++){let r=p.xMin+t/1e3*(p.xMax-p.xMin),s=p.xMin+(t+1)*(p.xMax-p.xMin)/1e3,i=n.evaluate({x:r}),o=n.evaluate({x:s});a.line(u(r,0).x,u(0,i).y,u(s,0).x,u(0,o).y,e)}}function c(){let t=function(){let t=p.xScale,e=p.yScale,n=(p.xMax-p.xMin)/t,r=(p.yMax-p.yMin)/e;for(;n>12;)t*=2,n=(p.xMax-p.xMin)/t;for(;n<4;)t/=2,n=(p.xMax-p.xMin)/t;for(;r>12;)e*=2,r=(p.yMax-p.yMin)/e;for(;r<4;)e/=2,r=(p.yMax-p.yMin)/e;return{xScale:t,yScale:e}}();p.xScale=t.xScale,p.yScale=t.yScale,a.rect(0,0,i.width,i.height),function(){o.lineWidth=i.scale;let t={min:Math.ceil(p.xMin/p.xScale),max:Math.floor(p.xMax/p.xScale)},e={min:Math.ceil(p.yMin/p.yScale),max:Math.floor(p.yMax/p.yScale)};for(let e=t.min;e<=t.max;e++){if(0==e)continue;let t=u(e*p.xScale,0).x;u(0,0).y;a.line(t,0,t,i.height,"lightgray")}for(let t=e.min;t<=e.max;t++){if(0==t)continue;u(0,0).x;let e=u(0,t*p.yScale).y;a.line(0,e,i.width,e,"lightgray")}}(),function(){o.fillStyle="black",o.lineWidth=1.5*i.scale,a.line(0,u(0,0).y,i.width,u(0,0).y),a.line(u(0,0).x,0,u(0,0).x,i.height),o.textBaseline="middle";let t={min:Math.ceil(p.xMin/p.xScale),max:Math.floor(p.xMax/p.xScale)};for(let e=t.min;e<=t.max;e++){if(o.textAlign="center",0==e)continue;let t=parseFloat((e*p.xScale).toPrecision(4)),n=u(e*p.xScale,0).x,r=u(0,0).y;a.line(n,r+5*i.scale,n,r-5*i.scale),a.text(t,n,r+15*i.scale)}let e={min:Math.ceil(p.yMin/p.yScale),max:Math.floor(p.yMax/p.yScale)};for(let t=e.min;t<=e.max;t++){if(0==t)continue;o.textAlign="end";let e=parseFloat((t*p.yScale).toPrecision(4)),n=u(0,0).x,r=u(0,t*p.yScale).y;a.line(n-5*i.scale,r,n+5*i.scale,r),a.text(e,n-10*i.scale,r)}}(),p.function&&h(p.function,"blue")}let l,f=!1;function x(t){let e=i.getBoundingClientRect();return{x:t.clientX-e.left,y:t.clientY-e.top}}function y(t,e){let n=p.xMax-p.xMin,r=p.yMax-p.yMin;return{x:p.xMin+t/i.trueWidth*n,y:p.yMax-e/i.trueHeight*r}}c(),i.addEventListener("mousedown",(function(t){l=x(t),f=!0,x(t)})),document.addEventListener("mouseup",(function(){f=!1})),i.addEventListener("mousemove",(function(t){if(f){let e=x(t),n=y(e.x,0).x-y(l.x,0).x,r=y(0,e.y).y-y(0,l.y).y;p.xMin-=n,p.xMax-=n,p.yMin-=r,p.yMax-=r,l=e,c()}})),i.addEventListener("wheel",(function(t){let e=x(t),n=y(e.x,e.y),r=n.x-p.xMin,s=p.xMax-n.x,i=p.yMax-n.y,o=n.y-p.yMin;t.deltaY>0?(p.xMin-=.05*r,p.xMax+=.05*s,p.yMin-=.05*o,p.yMax+=.05*i):t.deltaY<0&&(p.xMin+=.05*r,p.xMax-=.05*s,p.yMin+=.05*o,p.yMax-=.05*i),c(),t.preventDefault()})),document.querySelector(".functions > button").addEventListener("click",(function(){p.function=document.querySelector('.functions > input[name="y1"]').value,c()}))}]);
+
+// Backwards compatibility
+var index = {
+  Parser: Parser,
+  Expression: Expression
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (index);
+
+
+
+/***/ }),
+
+/***/ "./src/drawing.js":
+/*!************************!*\
+  !*** ./src/drawing.js ***!
+  \************************/
+/*! exports provided: Draw */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Draw", function() { return Draw; });
+// Drawing module
+function Draw(canvas) {
+  this.canvas = canvas;
+  this.ctx = canvas.getContext('2d');
+}
+
+Draw.prototype.fill = function(color) {
+  this.canvas.fillStyle = color;
+}
+
+Draw.prototype.line = function(x1, y1, x2, y2, color = 'black') {
+  this.ctx.beginPath();
+  this.ctx.moveTo(x1, y1);
+  this.ctx.lineTo(x2, y2);
+  this.ctx.strokeStyle = color;
+  this.ctx.stroke();
+}
+
+Draw.prototype.text = function(string, x, y, size = 10 * canvas.scale) {
+  this.ctx.font = size + 'px Arial';
+  this.ctx.fillText(string, x, y);
+}
+
+Draw.prototype.rect = function(x, y, width, height, color = 'white') {
+  this.ctx.fillStyle = color;
+  this.ctx.fillRect(x, y, width, height);
+}
+
+function colorCircle(centerX, centerY, radius, color = 'black') {
+  this.ctx.fillStyle = fillColor;
+  this.ctx.beginPath();
+  this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  this.ctx.fill();
+}
+
+
+
+
+/***/ }),
+
+/***/ "./src/eventHandling.js":
+/*!******************************!*\
+  !*** ./src/eventHandling.js ***!
+  \******************************/
+/*! exports provided: eventHandling */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "eventHandling", function() { return eventHandling; });
+/* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
+
+
+let isDragging = false;
+let draggedPoint;
+
+function mousePos(e) {
+  let rect = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+}
+
+// px to units
+function toUnitCoord(x, y) {
+  let graphWidth = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax - _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin;
+  let graphHeight = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin;
+  return {
+    x: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin + (x/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueWidth)) * graphWidth,
+    y: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - (y/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueHeight)) * graphHeight
+  };
+}
+
+function eventHandling() {
+  _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('mousedown', function(e) {
+    draggedPoint = mousePos(e);
+    isDragging = true;
+    let currentPos = mousePos(e);
+  });
+
+  document.addEventListener('mouseup', function() {
+    isDragging = false;
+  });
+
+  // Handles dragging; moves window opposite of dragged direction
+  _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('mousemove', function(e) {
+    if (isDragging) {
+
+      let currentPos = mousePos(e);
+      let xDiff = toUnitCoord(currentPos.x, 0).x - toUnitCoord(draggedPoint.x, 0).x;
+      let yDiff = toUnitCoord(0, currentPos.y).y - toUnitCoord(0, draggedPoint.y).y;
+
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin -= xDiff;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax -= xDiff;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin -= yDiff;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax -= yDiff;
+
+      draggedPoint = currentPos;
+      Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+    }
+  });
+
+  // Zooming in and out
+  _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('wheel', function(e) {
+    let currentPos = mousePos(e);
+    let gridPos = toUnitCoord(currentPos.x, currentPos.y);
+
+    let distFromLeft = gridPos.x - _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin;
+    let distFromRight = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax - gridPos.x;
+    let distFromTop = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - gridPos.y;
+    let distFromBottom = gridPos.y - _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin;
+    let factor = 0.05;
+    // zoom out
+    if (e.deltaY > 0) {
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin -= distFromLeft * factor;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax += distFromRight * factor;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin -= distFromBottom * factor;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax += distFromTop * factor;
+    }
+    // zoom in
+    else if (e.deltaY < 0) {
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin += distFromLeft * factor;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax -= distFromRight * factor;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin += distFromBottom * factor;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax -= distFromTop * factor;
+    }
+    Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+    e.preventDefault();
+  });
+
+  document.querySelector('.functions > button').addEventListener('click', function() {
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions.y1 = {}
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions.y1.expression = document.querySelector('.functions input[name="y1"]').value;
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions.y1.color = document.querySelector('.functions select[name="y1"]').value;
+    // console.log(view.functions.y1)
+    Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+  })
+}
+
+
+
+
+/***/ }),
+
+/***/ "./src/functionParsing.js":
+/*!********************************!*\
+  !*** ./src/functionParsing.js ***!
+  \********************************/
+/*! exports provided: parseFunction */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseFunction", function() { return parseFunction; });
+// https://github.com/silentmatt/expr-eval/tree/master
+let Parser = __webpack_require__(/*! expr-eval */ "./node_modules/expr-eval/dist/index.mjs").Parser;
+
+var parser = new Parser();
+
+String.prototype.add = function(index, string) {
+  return this.slice(0, index) + string + this.slice(index);
+}
+
+function parseFunction(expression) {
+  for (let i = 0; i < expression.length; i++) {
+    // Add a multiplication symbol if it is ommited
+    // e.g: '3x' -> '3*x'
+    if ((!isNaN(expression[i]) || expression[i] == ')')  && expression[i + 1] && /[a-z]/.test(expression[i + 1])) {
+      expression = expression.add(i + 1, '*')
+    }
+  }
+  return parser.parse(expression);
+}
+
+
+
+
+/***/ }),
+
+/***/ "./src/index.js":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! no exports provided */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
+/* harmony import */ var _eventHandling_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./eventHandling.js */ "./src/eventHandling.js");
+
+
+
+Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+Object(_eventHandling_js__WEBPACK_IMPORTED_MODULE_1__["eventHandling"])();
+
+
+/***/ }),
+
+/***/ "./src/rendering.js":
+/*!**************************!*\
+  !*** ./src/rendering.js ***!
+  \**************************/
+/*! exports provided: canvas, ctx, draw, render, view, toPixelCoord, findAutoScale */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "canvas", function() { return canvas; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ctx", function() { return ctx; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "draw", function() { return draw; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "view", function() { return view; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toPixelCoord", function() { return toPixelCoord; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findAutoScale", function() { return findAutoScale; });
+/* harmony import */ var _drawing_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./drawing.js */ "./src/drawing.js");
+/* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+
+
+
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
+
+// Increase canvas resolution
+canvas.trueHeight = canvas.height;
+canvas.trueWidth = canvas.width;
+
+canvas.scale = 2;
+canvas.style.width = canvas.width + 'px';
+canvas.style.height = canvas.height + 'px';
+canvas.width *= canvas.scale;
+canvas.height *= canvas.scale;
+
+let draw = new _drawing_js__WEBPACK_IMPORTED_MODULE_0__["Draw"](canvas);
+let view = {
+  xScale: 4,
+  yScale: 4,
+  xMin: -22.5,
+  xMax: 22.5,
+  yMin: -22.5,
+  yMax: 22.5,
+  functions: {}
+}
+let expression = '';
+
+// Units to px
+function toPixelCoord(x, y) {
+  let pixelX = (x - view.xMin)/(view.xMax - view.xMin) * canvas.width;
+  let pixelY = (view.yMax - y)/(view.yMax - view.yMin) * canvas.width;
+  return {x: pixelX, y: pixelY};
+}
+
+// Round scale to one or two significant digits
+function roundScale(scale) {
+  if (scale >= 1 && scale <= 9) {
+    return parseFloat((scale).toPrecision(1));
+  } else {
+    return parseFloat((scale).toPrecision(2));
+  }
+}
+
+// Find a scale with about 10 tick marks on x and y axis
+function findAutoScale() {
+  let xScale = view.xScale;
+  let yScale = view.yScale;
+
+  let windowLength = (view.xMax - view.xMin)/xScale;
+  let windowHeight = (view.yMax - view.yMin)/yScale;
+  while (windowLength > 12) {
+    xScale *= 2;
+    windowLength = (view.xMax - view.xMin)/xScale;
+  }
+  while (windowLength < 4) {
+    xScale /= 2;
+    windowLength = (view.xMax - view.xMin)/xScale;
+  }
+  while (windowHeight > 12) {
+    yScale *= 2;
+    windowHeight = (view.yMax - view.yMin)/yScale;
+  }
+  while (windowHeight < 4) {
+    yScale /= 2;
+    windowHeight = (view.yMax - view.yMin)/yScale;
+  }
+  return {xScale, yScale};
+}
+
+function drawGridLines() {
+  ctx.lineWidth = canvas.scale;
+  let xTickRange = {
+    min: Math.ceil(view.xMin/view.xScale),
+    max: Math.floor(view.xMax/view.xScale)
+  }
+  let yTickRange = {
+    min: Math.ceil(view.yMin/view.yScale),
+    max: Math.floor(view.yMax/view.yScale)
+  }
+  for (let i = xTickRange.min; i <= xTickRange.max; i++) {
+    if (i == 0) continue;
+    let xDraw = toPixelCoord(i * view.xScale, 0).x
+    let yDraw = toPixelCoord(0, 0).y;
+    draw.line(xDraw, 0, xDraw, canvas.height, 'lightgray');
+  }
+  for (let i = yTickRange.min; i <= yTickRange.max; i++) {
+    if (i == 0) continue;
+    let xDraw = toPixelCoord(0, 0).x
+    let yDraw = toPixelCoord(0, i * view.yScale).y;
+    draw.line(0, yDraw, canvas.width, yDraw, 'lightgray');
+  }
+}
+
+// Draws axes and grid ticks
+function drawAxes() {
+  ctx.fillStyle = 'black';
+  ctx.lineWidth = 1.5 * canvas.scale;
+  // y axis
+  draw.line(0, toPixelCoord(0, 0).y, canvas.width, toPixelCoord(0, 0).y);
+  // x axis
+  draw.line(toPixelCoord(0, 0).x, 0, toPixelCoord(0, 0).x, canvas.height);
+
+  // ticks on x axis
+  ctx.textBaseline = 'middle';
+  // ex: min: -2, max: 3, signifies 2 ticks right of x axis, and 3 ticks left
+  let xTickRange = {
+    min: Math.ceil(view.xMin/view.xScale),
+    max: Math.floor(view.xMax/view.xScale)
+  }
+
+  for (let i = xTickRange.min; i <= xTickRange.max; i++) {
+    ctx.textAlign = 'center';
+
+    if (i == 0) continue;
+    let xDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
+    let xDraw = toPixelCoord(i * view.xScale, 0).x
+    let yDraw = toPixelCoord(0, 0).y;
+    // ticks and labels
+    draw.line(xDraw, yDraw + 5 * canvas.scale, xDraw, yDraw - 5 * canvas.scale);
+    draw.text(xDisplayValue, xDraw, yDraw + 15 * canvas.scale);
+  }
+
+  // ticks on y axis
+  // ex: min: -2, max: 3, signifies 2 ticks above y axis, and 3 ticks below
+  let yTickRange = {
+    min: Math.ceil(view.yMin/view.yScale),
+    max: Math.floor(view.yMax/view.yScale)
+  }
+
+  for (let i = yTickRange.min; i <= yTickRange.max; i++) {
+    if (i == 0) continue;
+    ctx.textAlign = 'end';
+
+    let yDisplayValue = parseFloat((i * view.yScale).toPrecision(4));
+    let xDraw = toPixelCoord(0, 0).x
+    let yDraw = toPixelCoord(0, i * view.yScale).y;
+    // ticks and labels
+    draw.line(xDraw - 5 * canvas.scale, yDraw, xDraw + 5 * canvas.scale, yDraw);
+    draw.text(yDisplayValue, xDraw - 10 * canvas.scale, yDraw);
+  }
+}
+
+
+function drawGraph(f, color = 'black') {
+  let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(f);
+  let precision = 1000;
+  for (let i = 0; i < precision; i++) {
+    let currentX = view.xMin + i/precision * (view.xMax - view.xMin);
+    let nextX = view.xMin + (i + 1) * (view.xMax - view.xMin)/precision;
+    let currentY = expr.evaluate({ x: currentX });
+    let nextY = expr.evaluate({ x: nextX });
+    draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
+  }
+}
+
+function render() {
+  let autoScale = findAutoScale();
+  view.xScale = autoScale.xScale;
+  view.yScale = autoScale.yScale
+  draw.rect(0, 0, canvas.width, canvas.height);
+  drawGridLines();
+  drawAxes();
+  for (let key in view.functions) {
+    drawGraph(view.functions[key].expression, view.functions[key].color)
+  }
+}
+
+
+
+
+/***/ })
+
+/******/ });
+//# sourceMappingURL=main.js.map
