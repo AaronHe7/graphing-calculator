@@ -41,9 +41,14 @@ header img {
 
 .functions input {
   padding: 5px;
+  margin: 10px 0;
 }
 
 .functions > button {
   margin: 10px 0;
   padding: 5px;
+}
+
+#function-template {
+  display: none
 }

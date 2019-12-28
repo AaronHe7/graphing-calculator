@@ -20,18 +20,16 @@
     <div class="calculator">
       <canvas height="600" width="600" id="canvas"></canvas>
       <div class="functions">
-        <div class="function">
-          <input type="text" name="y1" placeholder="y1">
-           <select name="y1">
+        <div id="function-template">
+          <input type="text">
+           <select>
             <option value="blue">Blue</option>
             <option value="red">Red</option>
             <option value="black">Black</option>
             <option value="green">Green</option>
           </select>
         </div>
-        <br>
-        <button>Add Function</button>
-        <button>Graph</button>
+        <button class="add-function">Add Function</button>
       </div>
     </div>
     <script src="main.js"></script>

@@ -2001,9 +2001,10 @@ function colorCircle(centerX, centerY, radius, color = 'black') {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "eventHandling", function() { return eventHandling; });
 /* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
-
+  
 
 let isDragging = false;
+let numOfFunctions = 0;
 let draggedPoint;
 
 function mousePos(e) {
@@ -2022,6 +2023,42 @@ function toUnitCoord(x, y) {
     x: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin + (x/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueWidth)) * graphWidth,
     y: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - (y/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueHeight)) * graphHeight
   };
+}
+
+function addFunction() {
+  numOfFunctions++;
+  let functionName = 'y' + numOfFunctions;
+  // Make sure the function starts with a different color
+  let functionColor = ['blue', 'red', 'black', 'green'][(numOfFunctions - 1) % 4];
+  let functionTemplate = document.getElementById('function-template').cloneNode(true);
+  let input = functionTemplate.querySelector('input');
+  let select = functionTemplate.querySelector('select');
+
+  functionTemplate.removeAttribute('id')
+  // Add attributes
+  input.name = functionName;
+  input.placeholder = functionName;
+  select.name = functionName;
+  select.value = functionColor;
+  // Insert the function before the button
+  document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
+  // Whenever the input is updated, update the graph
+  input.addEventListener('input', graphFunctions);
+  select.addEventListener('change', graphFunctions);
+}
+
+addFunction();
+
+// Retrieve all inputs from the DOM, and add it to the view variable
+function graphFunctions() {
+  for (let i = 1; i <= numOfFunctions; i++) {
+    let functionName = 'y' + i;
+    let functionInput = document.querySelector(`.functions input[name="${functionName}"]`);
+    let functionObject = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[functionName] = {};
+    functionObject.expression = functionInput.value;
+    functionObject.color = document.querySelector(`.functions select[name="${functionName}"]`).value;
+  }
+  Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
 }
 
 function eventHandling() {
@@ -2081,13 +2118,10 @@ function eventHandling() {
     e.preventDefault();
   });
 
-  document.querySelector('.functions > button').addEventListener('click', function() {
-    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions.y1 = {}
-    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions.y1.expression = document.querySelector('.functions input[name="y1"]').value;
-    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions.y1.color = document.querySelector('.functions select[name="y1"]').value;
-    // console.log(view.functions.y1)
-    Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
-  })
+  // "Add Function" button
+  document.querySelector('.functions > button[class="add-function"]').addEventListener('click', function() {
+    addFunction();
+  });
 }
 
 
@@ -2313,6 +2347,9 @@ function drawAxes() {
 
 
 function drawGraph(f, color = 'black') {
+  if (!f) {
+    return;
+  }
   let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(f);
   let precision = 1000;
   for (let i = 0; i < precision; i++) {
