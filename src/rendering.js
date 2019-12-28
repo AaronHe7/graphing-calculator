@@ -143,6 +143,9 @@ function drawAxes() {
 
 
 function drawGraph(f, color = 'black') {
+  if (!f) {
+    return;
+  }
   let expr = parseFunction(f);
   let precision = 1000;
   for (let i = 0; i < precision; i++) {

@@ -1,6 +1,7 @@
-import {canvas, ctx, draw, view, render, toPixelCoord} from './rendering.js'
+  import {canvas, ctx, draw, view, render, toPixelCoord} from './rendering.js'
 
 let isDragging = false;
+let numOfFunctions = 0;
 let draggedPoint;
 
 function mousePos(e) {
@@ -19,6 +20,42 @@ function toUnitCoord(x, y) {
     x: view.xMin + (x/(canvas.trueWidth)) * graphWidth,
     y: view.yMax - (y/(canvas.trueHeight)) * graphHeight
   };
+}
+
+function addFunction() {
+  numOfFunctions++;
+  let functionName = 'y' + numOfFunctions;
+  // Make sure the function starts with a different color
+  let functionColor = ['blue', 'red', 'black', 'green'][(numOfFunctions - 1) % 4];
+  let functionTemplate = document.getElementById('function-template').cloneNode(true);
+  let input = functionTemplate.querySelector('input');
+  let select = functionTemplate.querySelector('select');
+
+  functionTemplate.removeAttribute('id')
+  // Add attributes
+  input.name = functionName;
+  input.placeholder = functionName;
+  select.name = functionName;
+  select.value = functionColor;
+  // Insert the function before the button
+  document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
+  // Whenever the input is updated, update the graph
+  input.addEventListener('input', graphFunctions);
+  select.addEventListener('change', graphFunctions);
+}
+
+addFunction();
+
+// Retrieve all inputs from the DOM, and add it to the view variable
+function graphFunctions() {
+  for (let i = 1; i <= numOfFunctions; i++) {
+    let functionName = 'y' + i;
+    let functionInput = document.querySelector(`.functions input[name="${functionName}"]`);
+    let functionObject = view.functions[functionName] = {};
+    functionObject.expression = functionInput.value;
+    functionObject.color = document.querySelector(`.functions select[name="${functionName}"]`).value;
+  }
+  render();
 }
 
 function eventHandling() {
@@ -78,13 +115,10 @@ function eventHandling() {
     e.preventDefault();
   });
 
-  document.querySelector('.functions > button').addEventListener('click', function() {
-    view.functions.y1 = {}
-    view.functions.y1.expression = document.querySelector('.functions input[name="y1"]').value;
-    view.functions.y1.color = document.querySelector('.functions select[name="y1"]').value;
-    // console.log(view.functions.y1)
-    render();
-  })
+  // "Add Function" button
+  document.querySelector('.functions > button[class="add-function"]').addEventListener('click', function() {
+    addFunction();
+  });
 }
 
 export { eventHandling }
