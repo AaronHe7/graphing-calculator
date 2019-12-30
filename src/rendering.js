@@ -143,17 +143,61 @@ function drawAxes() {
 
 
 function drawGraph(f, color = 'black') {
+  let numOfAsymptotes = 0;
   if (!f) {
     return;
   }
   let expr = parseFunction(f);
   let precision = 1000;
+  let previousDerivative = 0;
+  let previousX = 0;
   for (let i = 0; i < precision; i++) {
     let currentX = view.xMin + i/precision * (view.xMax - view.xMin);
     let nextX = view.xMin + (i + 1) * (view.xMax - view.xMin)/precision;
     let currentY = expr.evaluate({ x: currentX });
     let nextY = expr.evaluate({ x: nextX });
-    draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
+
+    // When the derivative of the graph changes from positive to negative, assume that it's trying to graph an asymptote
+    let currentDerivative = (nextY - currentY)/(nextX - currentX);
+    if (currentDerivative * previousDerivative >= 0) {
+      draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
+    // Graphs more precisely around asymptotes. Fixes issue where lines that approach asymptotes suddenly cut off
+    } else {
+      // If curve approaches asymptote from left side
+      if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
+        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 30, color);
+      // If curve approaches asymptote from right side
+      } else {
+        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 30, color);
+      }
+      draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, currentY).y, color);
+      numOfAsymptotes++;
+    }
+    previousDerivative = currentDerivative;
+    previousX = currentX;
+  }
+}
+
+// graphAroundAsymptote recursively graphs more accurately around asymptotes. It fixes the issue where the curve that approaches asymptotes suddenly cut off
+function graphAroundAsymptote(f, aX1, aX2, previousDerivative, depth, color) {
+  let expr = parseFunction(f);
+  let precision = 2;
+  for (let j = 0; j < precision; j++) {
+    let currentX = aX1 + (aX2 - aX1) * j/precision;
+    let nextX = aX1 + (aX2 - aX1) * (j + 1)/precision;
+    let currentY = expr.evaluate({ x: currentX });
+    let nextY = expr.evaluate({ x: nextX });
+    let currentDerivative = (nextY - currentY)/(nextX - currentX);
+    // Makes ure that when it is graphing around asymptotes, it doesn't accidently connect points through an asymptote
+    if (currentDerivative * previousDerivative >= 0) {
+      draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
+    } else {
+      if (depth > 1) {
+        graphAroundAsymptote(f, currentX, nextX, previousDerivative, depth - 1, color);
+      }
+      return;
+    }
+    previousDerivative = currentDerivative;
   }
 }
 
@@ -165,7 +209,11 @@ function render() {
   drawGridLines();
   drawAxes();
   for (let key in view.functions) {
-    drawGraph(view.functions[key].expression, view.functions[key].color)
+    try {
+    drawGraph(view.functions[key].expression, view.functions[key].color);
+    } catch {
+      console.log(view.functions[key].expression + ' is not a valid function.')
+    }
   }
 }
 

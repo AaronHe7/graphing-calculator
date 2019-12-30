@@ -11,7 +11,7 @@ function parseFunction(expression) {
   for (let i = 0; i < expression.length; i++) {
     // Add a multiplication symbol if it is ommited
     // e.g: '3x' -> '3*x'
-    if ((!isNaN(expression[i]) || expression[i] == ')')  && expression[i + 1] && /[a-z]/.test(expression[i + 1])) {
+    if ((!isNaN(expression[i]) || expression[i] == ')')  && (expression[i + 1] == '(' || expression[i + 1] && /[a-z]/.test(expression[i + 1]))) {
       expression = expression.add(i + 1, '*')
     }
   }

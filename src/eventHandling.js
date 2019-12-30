@@ -1,4 +1,4 @@
-  import {canvas, ctx, draw, view, render, toPixelCoord} from './rendering.js'
+import {canvas, ctx, draw, view, render, toPixelCoord} from './rendering.js'
 
 let isDragging = false;
 let numOfFunctions = 0;
@@ -63,6 +63,7 @@ function eventHandling() {
     draggedPoint = mousePos(e);
     isDragging = true;
     let currentPos = mousePos(e);
+    render();
   });
 
   document.addEventListener('mouseup', function() {
