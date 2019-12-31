@@ -35,16 +35,39 @@ header img {
   display: flex;
 }
 
-.functions {
+.controls {
+  display: flex;
+  flex-direction: column;
+}
+
+.navigator {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.navigator > div {
+  size: 15px;
+  margin: 0 10px;
+}
+
+.function-tab {
   margin: 0 50px;
 }
 
-.functions input {
+.delete {
+  cursor: pointer;
+  color: grey;
+  margin-left: 5px;
+  padding: 5px;
+}
+
+.function-tab input {
   padding: 5px;
   margin: 10px 0;
 }
 
-.functions > button {
+.function-tab > button {
   margin: 10px 0;
   padding: 5px;
 }

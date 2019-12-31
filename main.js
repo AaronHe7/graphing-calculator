@@ -2028,23 +2028,38 @@ function toUnitCoord(x, y) {
 function addFunction() {
   numOfFunctions++;
   let functionName = 'y' + numOfFunctions;
-  // Make sure the function starts with a different color
-  let functionColor = ['blue', 'red', 'black', 'green'][(numOfFunctions - 1) % 4];
   let functionTemplate = document.getElementById('function-template').cloneNode(true);
+
   let input = functionTemplate.querySelector('input');
   let select = functionTemplate.querySelector('select');
+  let colors = [];
+
+  // Creates an array of the possible colors
+  for (let i = 0, options = select.children; i < options.length; i++) {
+    colors.push(options[i].value);
+  }
+  // Make sure the function starts with a different color
+  let functionColor = colors[(numOfFunctions - 1) % colors.length];
 
   functionTemplate.removeAttribute('id')
+  functionTemplate.classList.add(functionName);
   // Add attributes
   input.name = functionName;
   input.placeholder = functionName;
   select.name = functionName;
   select.value = functionColor;
   // Insert the function before the button
-  document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
+  document.querySelector('.function-tab').insertBefore(functionTemplate, document.querySelector('button'));
   // Whenever the input is updated, update the graph
-  input.addEventListener('input', graphFunctions);
-  select.addEventListener('change', graphFunctions);
+  let event1 = input.addEventListener('input', graphFunctions);
+  let event2 = select.addEventListener('change', graphFunctions);
+  let event3 = functionTemplate.querySelector('.delete').addEventListener('click', function() {
+    functionTemplate.removeEventListener('input', event1);
+    functionTemplate.removeEventListener('change', event2);
+    functionTemplate.removeEventListener('click', event3);
+    functionTemplate.innerHTML = '';
+    graphFunctions();
+  });
 }
 
 addFunction();
@@ -2053,10 +2068,14 @@ addFunction();
 function graphFunctions() {
   for (let i = 1; i <= numOfFunctions; i++) {
     let functionName = 'y' + i;
-    let functionInput = document.querySelector(`.functions input[name="${functionName}"]`);
-    let functionObject = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[functionName] = {};
-    functionObject.expression = functionInput.value;
-    functionObject.color = document.querySelector(`.functions select[name="${functionName}"]`).value;
+    let functionInput = document.querySelector(`.function-tab input[name="${functionName}"]`);
+    if (functionInput) {
+      let functionObject = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[functionName] = {};
+      functionObject.expression = functionInput.value;
+      functionObject.color = document.querySelector(`.function-tab select[name="${functionName}"]`).value;
+    } else {
+      delete _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[functionName];
+    }
   }
   Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
 }
@@ -2120,7 +2139,7 @@ function eventHandling() {
   });
 
   // "Add Function" button
-  document.querySelector('.functions > button[class="add-function"]').addEventListener('click', function() {
+  document.querySelector('.function-tab > button[class="add-function"]').addEventListener('click', function() {
     addFunction();
   });
 }
@@ -2203,6 +2222,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findAutoScale", function() { return findAutoScale; });
 /* harmony import */ var _drawing_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./drawing.js */ "./src/drawing.js");
 /* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+// Problem: computers with bigger monitors
 
 
 
@@ -2297,7 +2317,7 @@ function drawGridLines() {
   }
 }
 
-// Draws axes and grid ticks
+// Draws axes
 function drawAxes() {
   ctx.fillStyle = 'black';
   ctx.lineWidth = 1.5 * canvas.scale;
@@ -2353,7 +2373,7 @@ function drawGraph(f, color = 'black') {
     return;
   }
   let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(f);
-  let precision = 1000;
+  let precision = 500;
   let previousDerivative = 0;
   let previousX = 0;
   for (let i = 0; i < precision; i++) {
@@ -2370,10 +2390,10 @@ function drawGraph(f, color = 'black') {
     } else {
       // If curve approaches asymptote from left side
       if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
-        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 30, color);
+        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 20, color);
       // If curve approaches asymptote from right side
       } else {
-        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 30, color);
+        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 20, color);
       }
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, currentY).y, color);
       numOfAsymptotes++;
@@ -2416,7 +2436,7 @@ function render() {
   for (let key in view.functions) {
     try {
     drawGraph(view.functions[key].expression, view.functions[key].color);
-    } catch {
+  } catch(e) {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }
