@@ -19,17 +19,29 @@
     </header>
     <div class="calculator">
       <canvas height="600" width="600" id="canvas"></canvas>
-      <div class="functions">
-        <div id="function-template">
-          <input type="text">
-           <select>
-            <option value="blue">Blue</option>
-            <option value="red">Red</option>
-            <option value="black">Black</option>
-            <option value="green">Green</option>
-          </select>
+      <div class="controls">
+        <div class="navigator">
+          <div>Graph</div>
+          <div>Table</div>
+          <div>Trace</div>
+          <div>Calculate</div>
         </div>
-        <button class="add-function">Add Function</button>
+        <div class="tabs">
+          <div class="function-tab">
+            <div id="function-template">
+              <input type="text">
+               <select>
+                <option value="blue">Blue</option>
+                <option value="red">Red</option>
+                <option value="orange">Orange</option>
+                <option value="green">Green</option>
+                <option value="grey">Grey</option>
+              </select>
+              <span class="delete">x</span>
+            </div>
+            <button class="add-function">Add Function</button>
+          </div>
+        </div>
       </div>
     </div>
     <script src="main.js"></script>

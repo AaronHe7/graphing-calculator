@@ -25,23 +25,38 @@ function toUnitCoord(x, y) {
 function addFunction() {
   numOfFunctions++;
   let functionName = 'y' + numOfFunctions;
-  // Make sure the function starts with a different color
-  let functionColor = ['blue', 'red', 'black', 'green'][(numOfFunctions - 1) % 4];
   let functionTemplate = document.getElementById('function-template').cloneNode(true);
+
   let input = functionTemplate.querySelector('input');
   let select = functionTemplate.querySelector('select');
+  let colors = [];
+
+  // Creates an array of the possible colors
+  for (let i = 0, options = select.children; i < options.length; i++) {
+    colors.push(options[i].value);
+  }
+  // Make sure the function starts with a different color
+  let functionColor = colors[(numOfFunctions - 1) % colors.length];
 
   functionTemplate.removeAttribute('id')
+  functionTemplate.classList.add(functionName);
   // Add attributes
   input.name = functionName;
   input.placeholder = functionName;
   select.name = functionName;
   select.value = functionColor;
   // Insert the function before the button
-  document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
+  document.querySelector('.function-tab').insertBefore(functionTemplate, document.querySelector('button'));
   // Whenever the input is updated, update the graph
-  input.addEventListener('input', graphFunctions);
-  select.addEventListener('change', graphFunctions);
+  let event1 = input.addEventListener('input', graphFunctions);
+  let event2 = select.addEventListener('change', graphFunctions);
+  let event3 = functionTemplate.querySelector('.delete').addEventListener('click', function() {
+    functionTemplate.removeEventListener('input', event1);
+    functionTemplate.removeEventListener('change', event2);
+    functionTemplate.removeEventListener('click', event3);
+    functionTemplate.innerHTML = '';
+    graphFunctions();
+  });
 }
 
 addFunction();
@@ -50,10 +65,14 @@ addFunction();
 function graphFunctions() {
   for (let i = 1; i <= numOfFunctions; i++) {
     let functionName = 'y' + i;
-    let functionInput = document.querySelector(`.functions input[name="${functionName}"]`);
-    let functionObject = view.functions[functionName] = {};
-    functionObject.expression = functionInput.value;
-    functionObject.color = document.querySelector(`.functions select[name="${functionName}"]`).value;
+    let functionInput = document.querySelector(`.function-tab input[name="${functionName}"]`);
+    if (functionInput) {
+      let functionObject = view.functions[functionName] = {};
+      functionObject.expression = functionInput.value;
+      functionObject.color = document.querySelector(`.function-tab select[name="${functionName}"]`).value;
+    } else {
+      delete view.functions[functionName];
+    }
   }
   render();
 }
@@ -117,7 +136,7 @@ function eventHandling() {
   });
 
   // "Add Function" button
-  document.querySelector('.functions > button[class="add-function"]').addEventListener('click', function() {
+  document.querySelector('.function-tab > button[class="add-function"]').addEventListener('click', function() {
     addFunction();
   });
 }

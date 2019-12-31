@@ -1,3 +1,4 @@
+// Problem: computers with bigger monitors
 import { Draw } from './drawing.js';
 import { parseFunction } from './functionParsing.js'
 
@@ -92,7 +93,7 @@ function drawGridLines() {
   }
 }
 
-// Draws axes and grid ticks
+// Draws axes
 function drawAxes() {
   ctx.fillStyle = 'black';
   ctx.lineWidth = 1.5 * canvas.scale;
@@ -148,7 +149,7 @@ function drawGraph(f, color = 'black') {
     return;
   }
   let expr = parseFunction(f);
-  let precision = 1000;
+  let precision = 500;
   let previousDerivative = 0;
   let previousX = 0;
   for (let i = 0; i < precision; i++) {
@@ -165,10 +166,10 @@ function drawGraph(f, color = 'black') {
     } else {
       // If curve approaches asymptote from left side
       if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
-        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 30, color);
+        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 20, color);
       // If curve approaches asymptote from right side
       } else {
-        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 30, color);
+        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 20, color);
       }
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, currentY).y, color);
       numOfAsymptotes++;
@@ -211,7 +212,7 @@ function render() {
   for (let key in view.functions) {
     try {
     drawGraph(view.functions[key].expression, view.functions[key].color);
-    } catch {
+  } catch(e) {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }
