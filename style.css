@@ -1,7 +1,7 @@
 body {
   padding: 0;
   margin: 0;
-  font-family: Tahoma;
+  font-family: Arial, Tahoma;
 }
 
 header {
@@ -13,14 +13,29 @@ header {
   padding: 10px 0;
 }
 
-.title {
-  font-size: 25px;
-}
-
 header img {
   height: 50px;
   width: 50px;
   margin: 0 20px;
+}
+
+button {
+  margin: 15px 0;
+  padding: 8px;
+  font-size: 15px;
+}
+
+#function-template {
+  display: none
+}
+
+#canvas {
+  width: 45%;
+  height: 45%;
+}
+
+.title {
+  font-size: 25px;
 }
 
 .subtitle {
@@ -33,26 +48,43 @@ header img {
 
 .calculator {
   display: flex;
+  margin: auto;
+  justify-content: ce nter;
 }
 
 .controls {
   display: flex;
   flex-direction: column;
+  width: 500px;
+  align-items: center;
 }
 
 .navigator {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+  font-size: 22px;
 }
 
 .navigator > div {
   size: 15px;
-  margin: 0 10px;
+  margin: 0 12px;
+  background-color: whitesmoke;
+  padding: 5px;
+  border-radius: 10%;
+  box-shadow: 1px 1px 1px 1px lightgray;
+  cursor: pointer;
+}
+
+.functions {
+  height: 200px;
+  overflow-y: auto;
 }
 
 .function-tab {
-  margin: 0 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .delete {
@@ -65,13 +97,21 @@ header img {
 .function-tab input {
   padding: 5px;
   margin: 10px 0;
+  font-size: 15px;
 }
 
-.function-tab > button {
+.function-tab select {
+  padding: 5px 0;
   margin: 10px 0;
-  padding: 5px;
+  font-size: 15px;
 }
 
-#function-template {
-  display: none
+.window {
+  margin: 30px 0;
+  text-align: center;
+}
+
+.window input {
+  width: 60px;
+  margin: 10px;
 }
