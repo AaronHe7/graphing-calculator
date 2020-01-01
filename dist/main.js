@@ -2010,8 +2010,8 @@ let draggedPoint;
 function mousePos(e) {
   let rect = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].getBoundingClientRect();
   return {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top
+    x: (e.clientX - rect.left) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueWidth/(rect.right - rect.left),
+    y: (e.clientY - rect.top) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueHeight/(rect.bottom - rect.top)
   };
 }
 
@@ -2049,7 +2049,8 @@ function addFunction() {
   select.name = functionName;
   select.value = functionColor;
   // Insert the function before the button
-  document.querySelector('.function-tab').insertBefore(functionTemplate, document.querySelector('button'));
+  // document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
+  document.querySelector('.functions').appendChild(functionTemplate);
   // Whenever the input is updated, update the graph
   let event1 = input.addEventListener('input', graphFunctions);
   let event2 = select.addEventListener('change', graphFunctions);
@@ -2068,11 +2069,11 @@ addFunction();
 function graphFunctions() {
   for (let i = 1; i <= numOfFunctions; i++) {
     let functionName = 'y' + i;
-    let functionInput = document.querySelector(`.function-tab input[name="${functionName}"]`);
+    let functionInput = document.querySelector(`.functions input[name="${functionName}"]`);
     if (functionInput) {
       let functionObject = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[functionName] = {};
       functionObject.expression = functionInput.value;
-      functionObject.color = document.querySelector(`.function-tab select[name="${functionName}"]`).value;
+      functionObject.color = document.querySelector(`.functions select[name="${functionName}"]`).value;
     } else {
       delete _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[functionName];
     }
@@ -2139,7 +2140,7 @@ function eventHandling() {
   });
 
   // "Add Function" button
-  document.querySelector('.function-tab > button[class="add-function"]').addEventListener('click', function() {
+  document.querySelector('button[class="add-function"]').addEventListener('click', function() {
     addFunction();
   });
 }
@@ -2169,14 +2170,71 @@ String.prototype.add = function(index, string) {
 }
 
 function parseFunction(expression) {
+  expression = logify(expression);
+  expression = addMultiplySymbols(expression);
+  return parser.parse(expression);
+}
+
+// Add a multiplication symbol if it is ommited
+// e.g: '3x' -> '3*x', '(x+1)(x+2)' -> '(x+1)*(x+2)'
+function addMultiplySymbols(expression) {
   for (let i = 0; i < expression.length; i++) {
-    // Add a multiplication symbol if it is ommited
-    // e.g: '3x' -> '3*x'
-    if ((!isNaN(expression[i]) || expression[i] == ')')  && (expression[i + 1] == '(' || expression[i + 1] && /[a-z]/.test(expression[i + 1]))) {
-      expression = expression.add(i + 1, '*')
+    /* A multiplication symbol is added if a:
+    - number comes before a variable or opening bracket
+    - closing bracket or number comes before an opening bracket
+    */
+    if ((!isNaN(expression[i]) || [')', 'x'].includes(expression[i]))  && (expression[i + 1] == '(' || expression[i + 1] && /[a-z]/.test(expression[i + 1]))) {
+      expression = expression.add(i + 1, '*');
     }
   }
-  return parser.parse(expression);
+  return expression;
+}
+
+// Allow logs with any base
+// e.g 'log3(x)' -> 'ln(x)/ln(3)'
+function logify(expression) {
+  // let log(x) be equivalent to log10(x)
+  expression = expression.replace(/log\(/g, 'log10(')
+
+  let logRegex = /log\d+\([^)]+\)/;
+  let logExpressions = expression.match(logRegex);
+  while (logExpressions) {
+    for (let i = 0; i < logExpressions.length; i++) {
+      logExpressions[i] = fixBrackets(logExpressions[i]);
+      let logBase = /log(\d+)\([^)]+\)/.exec(logExpressions[i])[1];
+      let logArg = fixBrackets(/log\d+\(([^)]+)\)/.exec(logExpressions[i])[1]);
+      let oldExpression = expression;
+      expression = expression.replace(logExpressions[i], `(ln(${logArg})/ln(${logBase}))`);
+      if (oldExpression == expression) {
+        return expression;   
+      }
+    }
+    logExpressions = expression.match(logRegex);
+  }
+  return expression;
+}
+
+// Fixes inequality between opening and closing brackets
+// e.g 'sin(x))' -> '(sin(x))', 'sin(x' -> 'sin(x)'
+function fixBrackets(expression) {
+  let openingBrackets = 0;
+  let closingBrackets = 0;
+  for (let i = 0; i < expression.length; i++) {
+    if (expression[i] == '(') {
+      openingBrackets++;
+    } else if (expression[i] == ')') {
+      closingBrackets++;
+    }
+  }
+  while (openingBrackets > closingBrackets) {
+    expression += ')'
+    closingBrackets++;
+  }
+  while (closingBrackets > openingBrackets) {
+    expression = '(' + expression;
+    openingBrackets++;
+  }
+  return expression;
 }
 
 
@@ -2229,13 +2287,11 @@ __webpack_require__.r(__webpack_exports__);
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
-// Increase canvas resolution
 canvas.trueHeight = canvas.height;
 canvas.trueWidth = canvas.width;
 
+// Increase canvas resolution
 canvas.scale = 2;
-canvas.style.width = canvas.width + 'px';
-canvas.style.height = canvas.height + 'px';
 canvas.width *= canvas.scale;
 canvas.height *= canvas.scale;
 
@@ -2367,12 +2423,7 @@ function drawAxes() {
 }
 
 
-function drawGraph(f, color = 'black') {
-  let numOfAsymptotes = 0;
-  if (!f) {
-    return;
-  }
-  let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(f);
+function drawGraph(expr, color = 'black') {
   let precision = 500;
   let previousDerivative = 0;
   let previousX = 0;
@@ -2390,10 +2441,10 @@ function drawGraph(f, color = 'black') {
     } else {
       // If curve approaches asymptote from left side
       if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
-        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 20, color);
+        graphAroundAsymptote(expr, currentX, nextX, previousDerivative, 20, color);
       // If curve approaches asymptote from right side
       } else {
-        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 20, color);
+        graphAroundAsymptote(expr, nextX, previousX, currentDerivative, 20, color);
       }
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, currentY).y, color);
       numOfAsymptotes++;
@@ -2404,8 +2455,7 @@ function drawGraph(f, color = 'black') {
 }
 
 // graphAroundAsymptote recursively graphs more accurately around asymptotes. It fixes the issue where the curve that approaches asymptotes suddenly cut off
-function graphAroundAsymptote(f, aX1, aX2, previousDerivative, depth, color) {
-  let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(f);
+function graphAroundAsymptote(expr, aX1, aX2, previousDerivative, depth, color) {
   let precision = 2;
   for (let j = 0; j < precision; j++) {
     let currentX = aX1 + (aX2 - aX1) * j/precision;
@@ -2418,7 +2468,7 @@ function graphAroundAsymptote(f, aX1, aX2, previousDerivative, depth, color) {
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
     } else {
       if (depth > 1) {
-        graphAroundAsymptote(f, currentX, nextX, previousDerivative, depth - 1, color);
+        graphAroundAsymptote(expr, currentX, nextX, previousDerivative, depth - 1, color);
       }
       return;
     }
@@ -2435,8 +2485,8 @@ function render() {
   drawAxes();
   for (let key in view.functions) {
     try {
-    drawGraph(view.functions[key].expression, view.functions[key].color);
-  } catch(e) {
+      drawGraph(Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(view.functions[key].expression), view.functions[key].color);
+    } catch(e) {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }

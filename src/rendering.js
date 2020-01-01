@@ -5,13 +5,11 @@ import { parseFunction } from './functionParsing.js'
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
-// Increase canvas resolution
 canvas.trueHeight = canvas.height;
 canvas.trueWidth = canvas.width;
 
+// Increase canvas resolution
 canvas.scale = 2;
-canvas.style.width = canvas.width + 'px';
-canvas.style.height = canvas.height + 'px';
 canvas.width *= canvas.scale;
 canvas.height *= canvas.scale;
 
@@ -143,12 +141,7 @@ function drawAxes() {
 }
 
 
-function drawGraph(f, color = 'black') {
-  let numOfAsymptotes = 0;
-  if (!f) {
-    return;
-  }
-  let expr = parseFunction(f);
+function drawGraph(expr, color = 'black') {
   let precision = 500;
   let previousDerivative = 0;
   let previousX = 0;
@@ -166,10 +159,10 @@ function drawGraph(f, color = 'black') {
     } else {
       // If curve approaches asymptote from left side
       if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
-        graphAroundAsymptote(f, currentX, nextX, previousDerivative, 20, color);
+        graphAroundAsymptote(expr, currentX, nextX, previousDerivative, 20, color);
       // If curve approaches asymptote from right side
       } else {
-        graphAroundAsymptote(f, nextX, previousX, currentDerivative, 20, color);
+        graphAroundAsymptote(expr, nextX, previousX, currentDerivative, 20, color);
       }
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, currentY).y, color);
       numOfAsymptotes++;
@@ -180,8 +173,7 @@ function drawGraph(f, color = 'black') {
 }
 
 // graphAroundAsymptote recursively graphs more accurately around asymptotes. It fixes the issue where the curve that approaches asymptotes suddenly cut off
-function graphAroundAsymptote(f, aX1, aX2, previousDerivative, depth, color) {
-  let expr = parseFunction(f);
+function graphAroundAsymptote(expr, aX1, aX2, previousDerivative, depth, color) {
   let precision = 2;
   for (let j = 0; j < precision; j++) {
     let currentX = aX1 + (aX2 - aX1) * j/precision;
@@ -194,7 +186,7 @@ function graphAroundAsymptote(f, aX1, aX2, previousDerivative, depth, color) {
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, nextY).y, color);
     } else {
       if (depth > 1) {
-        graphAroundAsymptote(f, currentX, nextX, previousDerivative, depth - 1, color);
+        graphAroundAsymptote(expr, currentX, nextX, previousDerivative, depth - 1, color);
       }
       return;
     }
@@ -211,8 +203,8 @@ function render() {
   drawAxes();
   for (let key in view.functions) {
     try {
-    drawGraph(view.functions[key].expression, view.functions[key].color);
-  } catch(e) {
+      drawGraph(parseFunction(view.functions[key].expression), view.functions[key].color);
+    } catch(e) {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }

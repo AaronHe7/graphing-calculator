@@ -7,8 +7,8 @@ let draggedPoint;
 function mousePos(e) {
   let rect = canvas.getBoundingClientRect();
   return {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top
+    x: (e.clientX - rect.left) * canvas.trueWidth/(rect.right - rect.left),
+    y: (e.clientY - rect.top) * canvas.trueHeight/(rect.bottom - rect.top)
   };
 }
 
@@ -46,7 +46,8 @@ function addFunction() {
   select.name = functionName;
   select.value = functionColor;
   // Insert the function before the button
-  document.querySelector('.function-tab').insertBefore(functionTemplate, document.querySelector('button'));
+  // document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
+  document.querySelector('.functions').appendChild(functionTemplate);
   // Whenever the input is updated, update the graph
   let event1 = input.addEventListener('input', graphFunctions);
   let event2 = select.addEventListener('change', graphFunctions);
@@ -65,11 +66,11 @@ addFunction();
 function graphFunctions() {
   for (let i = 1; i <= numOfFunctions; i++) {
     let functionName = 'y' + i;
-    let functionInput = document.querySelector(`.function-tab input[name="${functionName}"]`);
+    let functionInput = document.querySelector(`.functions input[name="${functionName}"]`);
     if (functionInput) {
       let functionObject = view.functions[functionName] = {};
       functionObject.expression = functionInput.value;
-      functionObject.color = document.querySelector(`.function-tab select[name="${functionName}"]`).value;
+      functionObject.color = document.querySelector(`.functions select[name="${functionName}"]`).value;
     } else {
       delete view.functions[functionName];
     }
@@ -136,7 +137,7 @@ function eventHandling() {
   });
 
   // "Add Function" button
-  document.querySelector('.function-tab > button[class="add-function"]').addEventListener('click', function() {
+  document.querySelector('button[class="add-function"]').addEventListener('click', function() {
     addFunction();
   });
 }
