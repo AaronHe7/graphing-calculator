@@ -165,7 +165,6 @@ function drawGraph(expr, color = 'black') {
         graphAroundAsymptote(expr, nextX, previousX, currentDerivative, 20, color);
       }
       draw.line(toPixelCoord(currentX, 0).x, toPixelCoord(0, currentY).y, toPixelCoord(nextX, 0).x, toPixelCoord(0, currentY).y, color);
-      numOfAsymptotes++;
     }
     previousDerivative = currentDerivative;
     previousX = currentX;
