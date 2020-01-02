@@ -1,6 +1,6 @@
 // Problem: computers with bigger monitors
 import { Draw } from './drawing.js';
-import { parseFunction } from './functionParsing.js'
+import { parseFunction } from './functionParsing.js';
 
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
@@ -41,13 +41,34 @@ function roundScale(scale) {
   }
 }
 
+function roundTickMark(number) {
+  if (Math.abs(number) < 100000) {
+    return parseFloat((number).toPrecision(4));
+  } else {
+    return number.toPrecision(2).replace('e+', '*10^');
+  }
+}
+
+
 // Find a scale with about 10 tick marks on x and y axis
 function findAutoScale() {
   let xScale = view.xScale;
   let yScale = view.yScale;
 
+  if ((view.xMax <= view.xMin) || (view.yMax <= view.yMin) || (view.xScale <= 0) || (view.yScale <= 0)) {
+    console.log('Error: invalid window settings');
+    xScale = 4;
+    yScale = 4;
+  }
+  if (Math.abs(view.xScale) == Infinity) {
+    xScale = 4;
+  } else if (Math.abs(view.yScale) == Infinity) {
+    yScale = 4;
+  }
+
   let windowLength = (view.xMax - view.xMin)/xScale;
   let windowHeight = (view.yMax - view.yMin)/yScale;
+
   while (windowLength > 12) {
     xScale *= 2;
     windowLength = (view.xMax - view.xMin)/xScale;
@@ -112,7 +133,7 @@ function drawAxes() {
     ctx.textAlign = 'center';
 
     if (i == 0) continue;
-    let xDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
+    let xDisplayValue = roundTickMark(i * view.xScale);
     let xDraw = toPixelCoord(i * view.xScale, 0).x
     let yDraw = toPixelCoord(0, 0).y;
     // ticks and labels
@@ -131,7 +152,7 @@ function drawAxes() {
     if (i == 0) continue;
     ctx.textAlign = 'end';
 
-    let yDisplayValue = parseFloat((i * view.yScale).toPrecision(4));
+    let yDisplayValue = roundTickMark(i * view.yScale);
     let xDraw = toPixelCoord(0, 0).x
     let yDraw = toPixelCoord(0, i * view.yScale).y;
     // ticks and labels
@@ -196,7 +217,7 @@ function graphAroundAsymptote(expr, aX1, aX2, previousDerivative, depth, color) 
 function render() {
   let autoScale = findAutoScale();
   view.xScale = autoScale.xScale;
-  view.yScale = autoScale.yScale
+  view.yScale = autoScale.yScale;
   draw.rect(0, 0, canvas.width, canvas.height);
   drawGridLines();
   drawAxes();

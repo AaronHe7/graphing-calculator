@@ -2143,6 +2143,47 @@ function eventHandling() {
   document.querySelector('button[class="add-function"]').addEventListener('click', function() {
     addFunction();
   });
+
+  // event listeners for the window
+  let windowElements = ['x-min', 'x-max', 'y-min', 'y-max', 'x-scale', 'y-scale'];
+  for (let i = 0; i < windowElements.length; i++) {
+    document.querySelector(`input[name="${windowElements[i]}"]`).addEventListener('input', function() {
+      let xMin = document.querySelector('input[name="x-min"]').value;
+      let xMax = document.querySelector('input[name="x-max"]').value;
+      let xScale = parseFloat(document.querySelector('input[name="x-scale"]').value);
+      let yMin = document.querySelector('input[name="y-min"]').value;
+      let yMax = document.querySelector('input[name="y-max"]').value;
+      let yScale = parseFloat(document.querySelector('input[name="y-scale"]').value);
+
+      if (xMin && xMax && parseFloat(xMin) < parseFloat(xMax)) {
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax = parseFloat(xMax);
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin = parseFloat(xMin);
+      }
+
+      else if (yMin && yMax && parseFloat(yMin) < parseFloat(yMax)) {
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax = parseFloat(yMax);
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin = parseFloat(yMin);
+      }
+
+      if (xScale && xScale > 0) {
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale = xScale;
+      } else {
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale = 4;
+      }
+      if (yScale & yScale > 0) {
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yScale = yScale;
+      } else {
+        _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yScale = 4;
+      }
+      Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+    });
+  }
+
+  for (let i = 0; i < windowElements.length; i++) {
+    document.querySelector(`input[name="${windowElements[i]}"]`).addEventListener('click', function() {
+      document.querySelector(`input[name="${windowElements[i]}"]`).value = '';
+    });
+  }
 }
 
 
@@ -2323,13 +2364,34 @@ function roundScale(scale) {
   }
 }
 
+function roundTickMark(number) {
+  if (Math.abs(number) < 100000) {
+    return parseFloat((number).toPrecision(4));
+  } else {
+    return number.toPrecision(2).replace('e+', '*10^');
+  }
+}
+
+
 // Find a scale with about 10 tick marks on x and y axis
 function findAutoScale() {
   let xScale = view.xScale;
   let yScale = view.yScale;
 
+  if ((view.xMax <= view.xMin) || (view.yMax <= view.yMin) || (view.xScale <= 0) || (view.yScale <= 0)) {
+    console.log('Error: invalid window settings');
+    xScale = 4;
+    yScale = 4;
+  }
+  if (Math.abs(view.xScale) == Infinity) {
+    xScale = 4;
+  } else if (Math.abs(view.yScale) == Infinity) {
+    yScale = 4;
+  }
+
   let windowLength = (view.xMax - view.xMin)/xScale;
   let windowHeight = (view.yMax - view.yMin)/yScale;
+
   while (windowLength > 12) {
     xScale *= 2;
     windowLength = (view.xMax - view.xMin)/xScale;
@@ -2394,7 +2456,7 @@ function drawAxes() {
     ctx.textAlign = 'center';
 
     if (i == 0) continue;
-    let xDisplayValue = parseFloat((i * view.xScale).toPrecision(4));
+    let xDisplayValue = roundTickMark(i * view.xScale);
     let xDraw = toPixelCoord(i * view.xScale, 0).x
     let yDraw = toPixelCoord(0, 0).y;
     // ticks and labels
@@ -2413,7 +2475,7 @@ function drawAxes() {
     if (i == 0) continue;
     ctx.textAlign = 'end';
 
-    let yDisplayValue = parseFloat((i * view.yScale).toPrecision(4));
+    let yDisplayValue = roundTickMark(i * view.yScale);
     let xDraw = toPixelCoord(0, 0).x
     let yDraw = toPixelCoord(0, i * view.yScale).y;
     // ticks and labels
@@ -2478,7 +2540,7 @@ function graphAroundAsymptote(expr, aX1, aX2, previousDerivative, depth, color) 
 function render() {
   let autoScale = findAutoScale();
   view.xScale = autoScale.xScale;
-  view.yScale = autoScale.yScale
+  view.yScale = autoScale.yScale;
   draw.rect(0, 0, canvas.width, canvas.height);
   drawGridLines();
   drawAxes();

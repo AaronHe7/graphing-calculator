@@ -140,6 +140,47 @@ function eventHandling() {
   document.querySelector('button[class="add-function"]').addEventListener('click', function() {
     addFunction();
   });
+
+  // event listeners for the window
+  let windowElements = ['x-min', 'x-max', 'y-min', 'y-max', 'x-scale', 'y-scale'];
+  for (let i = 0; i < windowElements.length; i++) {
+    document.querySelector(`input[name="${windowElements[i]}"]`).addEventListener('input', function() {
+      let xMin = document.querySelector('input[name="x-min"]').value;
+      let xMax = document.querySelector('input[name="x-max"]').value;
+      let xScale = parseFloat(document.querySelector('input[name="x-scale"]').value);
+      let yMin = document.querySelector('input[name="y-min"]').value;
+      let yMax = document.querySelector('input[name="y-max"]').value;
+      let yScale = parseFloat(document.querySelector('input[name="y-scale"]').value);
+
+      if (xMin && xMax && parseFloat(xMin) < parseFloat(xMax)) {
+        view.xMax = parseFloat(xMax);
+        view.xMin = parseFloat(xMin);
+      }
+
+      else if (yMin && yMax && parseFloat(yMin) < parseFloat(yMax)) {
+        view.yMax = parseFloat(yMax);
+        view.yMin = parseFloat(yMin);
+      }
+
+      if (xScale && xScale > 0) {
+        view.xScale = xScale;
+      } else {
+        view.xScale = 4;
+      }
+      if (yScale & yScale > 0) {
+        view.yScale = yScale;
+      } else {
+        view.yScale = 4;
+      }
+      render();
+    });
+  }
+
+  for (let i = 0; i < windowElements.length; i++) {
+    document.querySelector(`input[name="${windowElements[i]}"]`).addEventListener('click', function() {
+      document.querySelector(`input[name="${windowElements[i]}"]`).value = '';
+    });
+  }
 }
 
 export { eventHandling }
