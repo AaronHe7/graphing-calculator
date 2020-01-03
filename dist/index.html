@@ -21,10 +21,10 @@
       <canvas height="600" width="600" id="canvas"></canvas>
       <div class="controls">
         <div class="navigator">
-          <div>Graph</div>
-          <div>Table</div>
-          <div>Trace</div>
-          <div>Calculate</div>
+          <div class="function-nav">Functions</div>
+          <div class="table-nav">Table</div>
+          <div class="trace-nav">Trace</div>
+          <div class="calculate-nav">Calculate</div>
         </div>
         <div class="tabs">
           <div class="function-tab">
@@ -49,8 +49,14 @@
               <input type="text" placeholder="yMin" name="y-min">≤ y ≤<input type="text" placeholder="yMax" name="y-max"><br>
               xScale: <input type="text" name="x-scale"><br>
               yScale: <input type="text" name="y-scale"><br>
-              <button class="update">Update</button>
+              <button class="clear-window">Clear</button>
+              <button class="reset-window">Reset Default</button>
             </div>
+          </div>
+          <div class="table-tab">
+            <h2>Table</h2>
+            <div>Move the graph around to update the table!</div>
+            <div style="overflow-x: scroll; width: 300px;"><table></table></div>
           </div>
         </div>
       </div>

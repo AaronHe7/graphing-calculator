@@ -44,7 +44,7 @@ function logify(expression) {
       let oldExpression = expression;
       expression = expression.replace(logExpressions[i], `(ln(${logArg})/ln(${logBase}))`);
       if (oldExpression == expression) {
-        return expression;   
+        return expression;
       }
     }
     logExpressions = expression.match(logRegex);

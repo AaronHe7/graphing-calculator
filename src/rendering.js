@@ -1,6 +1,7 @@
 // Problem: computers with bigger monitors
 import { Draw } from './drawing.js';
 import { parseFunction } from './functionParsing.js';
+import { renderTable } from './table.js'
 
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
@@ -42,9 +43,16 @@ function roundScale(scale) {
 }
 
 function roundTickMark(number) {
+  if (number == 0) {
+    return 0;
+  }
+  if (Math.abs(number) <= 0.0001) {
+    return parseFloat((number).toPrecision(3)).toExponential().replace('e', '*10^');
+  }
   if (Math.abs(number) < 100000) {
     return parseFloat((number).toPrecision(4));
-  } else {
+  }
+  if (Math.abs(number) >= 100000) {
     return number.toPrecision(2).replace('e+', '*10^');
   }
 }
@@ -222,12 +230,17 @@ function render() {
   drawGridLines();
   drawAxes();
   for (let key in view.functions) {
+    if (!view.functions[key].expression) {
+      delete view.functions[key];
+      continue;
+    }
     try {
       drawGraph(parseFunction(view.functions[key].expression), view.functions[key].color);
     } catch(e) {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }
+  renderTable();
 }
 
-export {canvas, ctx, draw, render, view, toPixelCoord, findAutoScale}
+export {canvas, ctx, draw, render, view, toPixelCoord, findAutoScale }

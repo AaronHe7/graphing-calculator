@@ -45,6 +45,7 @@ function addFunction() {
   input.placeholder = functionName;
   select.name = functionName;
   select.value = functionColor;
+
   // Insert the function before the button
   // document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
   document.querySelector('.functions').appendChild(functionTemplate);
@@ -76,6 +77,20 @@ function graphFunctions() {
     }
   }
   render();
+}
+
+function renderTab(tabName) {
+  let tabList = ['function', 'table', 'trace', 'calculate'];
+  for (let i = 0; i < tabList.length; i++) {
+    try {
+      document.querySelector(`.${tabList[i]}-nav`).style.backgroundColor = 'whitesmoke';
+      document.querySelector(`.${tabList[i]}-tab`).style.display = 'none';
+    } catch(e) {
+      console.log(`Tab not found: ${tabList[i]}.`);
+    }
+  }
+  document.querySelector(`.${tabName}-nav`).style.backgroundColor = 'lightgray';
+  document.querySelector(`.${tabName}-tab`).style.display = '';
 }
 
 function eventHandling() {
@@ -157,7 +172,7 @@ function eventHandling() {
         view.xMin = parseFloat(xMin);
       }
 
-      else if (yMin && yMax && parseFloat(yMin) < parseFloat(yMax)) {
+      if (yMin && yMax && parseFloat(yMin) < parseFloat(yMax)) {
         view.yMax = parseFloat(yMax);
         view.yMin = parseFloat(yMin);
       }
@@ -167,7 +182,7 @@ function eventHandling() {
       } else {
         view.xScale = 4;
       }
-      if (yScale & yScale > 0) {
+      if (yScale && yScale > 0) {
         view.yScale = yScale;
       } else {
         view.yScale = 4;
@@ -176,11 +191,28 @@ function eventHandling() {
     });
   }
 
-  for (let i = 0; i < windowElements.length; i++) {
-    document.querySelector(`input[name="${windowElements[i]}"]`).addEventListener('click', function() {
+  document.querySelector('button[class="clear-window"]').addEventListener('click', function() {
+    for (let i = 0; i < windowElements.length; i++) {
       document.querySelector(`input[name="${windowElements[i]}"]`).value = '';
+    }
+  });
+
+  document.querySelector('button[class="reset-window"]').addEventListener('click', function() {
+    view.xMin = -22.5;
+    view.xMax = 22.5;
+    view.yMin = -22.5;
+    view.yMax = 22.5;
+    view.xScale = 4;
+    view.yScale = 4;
+    render();
+  });
+
+  let tabList = ['function', 'table', 'trace', 'calculate'];
+  for (let i = 0; i < tabList.length; i++) {
+    document.querySelector(`.${tabList[i]}-nav`).addEventListener('click', function() {
+      renderTab(tabList[i]);
     });
   }
 }
 
-export { eventHandling }
+export { eventHandling, renderTab };

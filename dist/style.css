@@ -49,7 +49,7 @@ button {
 .calculator {
   display: flex;
   margin: auto;
-  justify-content: ce nter;
+  justify-content: center;
 }
 
 .controls {
@@ -77,21 +77,25 @@ button {
 }
 
 .functions {
+  display: flex;
+  flex-direction: column;
   height: 200px;
   overflow-y: auto;
+  width: 300px;
+  align-items: center;
 }
 
 .function-tab {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 .delete {
   cursor: pointer;
   color: grey;
   margin-left: 5px;
-  padding: 5px;
 }
 
 .function-tab input {
@@ -114,4 +118,24 @@ button {
 .window input {
   width: 80px;
   margin: 10px;
+}
+
+.table-tab {
+  text-align: center;
+}
+
+table {
+  margin-top: 30px;
+  width: 300px;
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+th {
+  border: 1px solid black;
+}
+
+td {
+  border: 1px solid black;
+  border-left: 1px solid black;
 }
