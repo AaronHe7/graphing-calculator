@@ -1994,12 +1994,13 @@ function colorCircle(centerX, centerY, radius, color = 'black') {
 /*!******************************!*\
   !*** ./src/eventHandling.js ***!
   \******************************/
-/*! exports provided: eventHandling */
+/*! exports provided: eventHandling, renderTab */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "eventHandling", function() { return eventHandling; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTab", function() { return renderTab; });
 /* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
 
 
@@ -2048,6 +2049,7 @@ function addFunction() {
   input.placeholder = functionName;
   select.name = functionName;
   select.value = functionColor;
+
   // Insert the function before the button
   // document.querySelector('.functions').insertBefore(functionTemplate, document.querySelector('button'));
   document.querySelector('.functions').appendChild(functionTemplate);
@@ -2079,6 +2081,20 @@ function graphFunctions() {
     }
   }
   Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+}
+
+function renderTab(tabName) {
+  let tabList = ['function', 'table', 'trace', 'calculate'];
+  for (let i = 0; i < tabList.length; i++) {
+    try {
+      document.querySelector(`.${tabList[i]}-nav`).style.backgroundColor = 'whitesmoke';
+      document.querySelector(`.${tabList[i]}-tab`).style.display = 'none';
+    } catch(e) {
+      console.log(`Tab not found: ${tabList[i]}.`);
+    }
+  }
+  document.querySelector(`.${tabName}-nav`).style.backgroundColor = 'lightgray';
+  document.querySelector(`.${tabName}-tab`).style.display = '';
 }
 
 function eventHandling() {
@@ -2160,7 +2176,7 @@ function eventHandling() {
         _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin = parseFloat(xMin);
       }
 
-      else if (yMin && yMax && parseFloat(yMin) < parseFloat(yMax)) {
+      if (yMin && yMax && parseFloat(yMin) < parseFloat(yMax)) {
         _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax = parseFloat(yMax);
         _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin = parseFloat(yMin);
       }
@@ -2170,7 +2186,7 @@ function eventHandling() {
       } else {
         _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale = 4;
       }
-      if (yScale & yScale > 0) {
+      if (yScale && yScale > 0) {
         _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yScale = yScale;
       } else {
         _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yScale = 4;
@@ -2179,9 +2195,26 @@ function eventHandling() {
     });
   }
 
-  for (let i = 0; i < windowElements.length; i++) {
-    document.querySelector(`input[name="${windowElements[i]}"]`).addEventListener('click', function() {
+  document.querySelector('button[class="clear-window"]').addEventListener('click', function() {
+    for (let i = 0; i < windowElements.length; i++) {
       document.querySelector(`input[name="${windowElements[i]}"]`).value = '';
+    }
+  });
+
+  document.querySelector('button[class="reset-window"]').addEventListener('click', function() {
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin = -22.5;
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax = 22.5;
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin = -22.5;
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax = 22.5;
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale = 4;
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yScale = 4;
+    Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+  });
+
+  let tabList = ['function', 'table', 'trace', 'calculate'];
+  for (let i = 0; i < tabList.length; i++) {
+    document.querySelector(`.${tabList[i]}-nav`).addEventListener('click', function() {
+      renderTab(tabList[i]);
     });
   }
 }
@@ -2247,7 +2280,7 @@ function logify(expression) {
       let oldExpression = expression;
       expression = expression.replace(logExpressions[i], `(ln(${logArg})/ln(${logBase}))`);
       if (oldExpression == expression) {
-        return expression;   
+        return expression;
       }
     }
     logExpressions = expression.match(logRegex);
@@ -2297,6 +2330,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+Object(_eventHandling_js__WEBPACK_IMPORTED_MODULE_1__["renderTab"])('function');
 Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
 Object(_eventHandling_js__WEBPACK_IMPORTED_MODULE_1__["eventHandling"])();
 
@@ -2321,7 +2355,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findAutoScale", function() { return findAutoScale; });
 /* harmony import */ var _drawing_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./drawing.js */ "./src/drawing.js");
 /* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+/* harmony import */ var _table_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./table.js */ "./src/table.js");
 // Problem: computers with bigger monitors
+
 
 
 
@@ -2365,9 +2401,16 @@ function roundScale(scale) {
 }
 
 function roundTickMark(number) {
+  if (number == 0) {
+    return 0;
+  }
+  if (Math.abs(number) <= 0.0001) {
+    return parseFloat((number).toPrecision(3)).toExponential().replace('e', '*10^');
+  }
   if (Math.abs(number) < 100000) {
     return parseFloat((number).toPrecision(4));
-  } else {
+  }
+  if (Math.abs(number) >= 100000) {
     return number.toPrecision(2).replace('e+', '*10^');
   }
 }
@@ -2545,11 +2588,94 @@ function render() {
   drawGridLines();
   drawAxes();
   for (let key in view.functions) {
+    if (!view.functions[key].expression) {
+      delete view.functions[key];
+      continue;
+    }
     try {
       drawGraph(Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(view.functions[key].expression), view.functions[key].color);
     } catch(e) {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
+  }
+  Object(_table_js__WEBPACK_IMPORTED_MODULE_2__["renderTable"])();
+}
+
+
+
+
+/***/ }),
+
+/***/ "./src/table.js":
+/*!**********************!*\
+  !*** ./src/table.js ***!
+  \**********************/
+/*! exports provided: renderTable */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTable", function() { return renderTable; });
+/* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
+/* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+
+
+
+function roundTableValue(number) {
+  if (Math.abs(number) == Infinity || number == NaN) {
+    return '';
+  }
+  if (number == 0) {
+    return 0;
+  }
+  if (Math.abs(number) <= 0.0001) {
+    return parseFloat((number).toPrecision(3)).toExponential().replace('e', '*10^');
+  }
+  if (Math.abs(number) >= 100000) {
+    return number.toPrecision(3).replace('e+', '*10^');
+  }
+  if (Math.abs(number) < 100000) {
+    return parseFloat((number).toPrecision(3));
+  }
+}
+
+function renderTable() {
+  let tableElement = document.querySelector('table');
+
+  // table headers / labels
+  tableElement.innerHTML = '';
+  let headerRow = document.createElement('tr');
+  let xLabel = document.createElement('th');
+  xLabel.textContent = 'x';
+  headerRow.appendChild(xLabel);
+
+  // values of tables
+  for (let key in _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions) {
+    let tableHeader = document.createElement('th');
+    tableHeader.textContent = key;
+    headerRow.appendChild(tableHeader);
+  }
+  tableElement.appendChild(headerRow);
+
+  let tblMin = Math.ceil(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin/_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale;
+  let tblMax = Math.floor(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax/_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale;
+  let numberOfValues = (tblMax - tblMin)/_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xScale;
+
+  for (let i = 0; i <= numberOfValues; i++) {
+    let x = tblMin + (tblMax - tblMin) * i/numberOfValues;
+    let tableRow = document.createElement('tr');
+    let xColumn = document.createElement('td');
+    xColumn.textContent = roundTableValue(x);
+    tableRow.appendChild(xColumn);
+
+    for (let key in _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions) {
+      let yColumn = document.createElement('td');
+      let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[key].expression);
+      yColumn.textContent = roundTableValue(expr.evaluate({x}));
+
+      tableRow.appendChild(yColumn);
+    }
+    tableElement.appendChild(tableRow);
   }
 }
 
