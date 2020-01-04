@@ -26,8 +26,8 @@ Draw.prototype.rect = function(x, y, width, height, color = 'white') {
   this.ctx.fillRect(x, y, width, height);
 }
 
-function colorCircle(centerX, centerY, radius, color = 'black') {
-  this.ctx.fillStyle = fillColor;
+Draw.prototype.colorCircle = function(centerX, centerY, radius, color = 'black') {
+  this.ctx.fillStyle = color;
   this.ctx.beginPath();
   this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   this.ctx.fill();

@@ -6,9 +6,6 @@ import { renderTable } from './table.js'
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
-canvas.trueHeight = canvas.height;
-canvas.trueWidth = canvas.width;
-
 // Increase canvas resolution
 canvas.scale = 2;
 canvas.width *= canvas.scale;
@@ -22,7 +19,8 @@ let view = {
   xMax: 22.5,
   yMin: -22.5,
   yMax: 22.5,
-  functions: {}
+  functions: {},
+  point: {}
 }
 let expression = '';
 
@@ -200,6 +198,14 @@ function drawGraph(expr, color = 'black') {
   }
 }
 
+function drawPoint(x, y, color) {
+  let pointX = toPixelCoord(x, 0).x;
+  let pointY = toPixelCoord(0, y).y;
+  draw.colorCircle(pointX, pointY, 5, color);
+  ctx.textAlign = 'left';
+  draw.text(`(${roundTickMark(x)}, ${roundTickMark(y)})`, pointX + 10, pointY + 15)
+}
+
 // graphAroundAsymptote recursively graphs more accurately around asymptotes. It fixes the issue where the curve that approaches asymptotes suddenly cut off
 function graphAroundAsymptote(expr, aX1, aX2, previousDerivative, depth, color) {
   let precision = 2;
@@ -240,6 +246,8 @@ function render() {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }
+  // Draws point on graph closest to cursor
+  drawPoint(view.point.x, view.point.y, view.point.color);
   renderTable();
 }
 

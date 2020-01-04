@@ -1978,8 +1978,8 @@ Draw.prototype.rect = function(x, y, width, height, color = 'white') {
   this.ctx.fillRect(x, y, width, height);
 }
 
-function colorCircle(centerX, centerY, radius, color = 'black') {
-  this.ctx.fillStyle = fillColor;
+Draw.prototype.colorCircle = function(centerX, centerY, radius, color = 'black') {
+  this.ctx.fillStyle = color;
   this.ctx.beginPath();
   this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
   this.ctx.fill();
@@ -2002,6 +2002,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "eventHandling", function() { return eventHandling; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTab", function() { return renderTab; });
 /* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
+/* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+
 
 
 let isDragging = false;
@@ -2011,8 +2013,8 @@ let draggedPoint;
 function mousePos(e) {
   let rect = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].getBoundingClientRect();
   return {
-    x: (e.clientX - rect.left) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueWidth/(rect.right - rect.left),
-    y: (e.clientY - rect.top) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueHeight/(rect.bottom - rect.top)
+    x: (e.clientX - rect.left) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].width/(rect.right - rect.left),
+    y: (e.clientY - rect.top) * _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].height/(rect.bottom - rect.top)
   };
 }
 
@@ -2021,8 +2023,8 @@ function toUnitCoord(x, y) {
   let graphWidth = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMax - _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin;
   let graphHeight = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin;
   return {
-    x: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin + (x/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueWidth)) * graphWidth,
-    y: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - (y/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].trueHeight)) * graphHeight
+    x: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].xMin + (x/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].width)) * graphWidth,
+    y: _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax - (y/(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].height)) * graphHeight
   };
 }
 
@@ -2084,7 +2086,7 @@ function graphFunctions() {
 }
 
 function renderTab(tabName) {
-  let tabList = ['function', 'table', 'trace', 'calculate'];
+  let tabList = ['function', 'table', 'calculate'];
   for (let i = 0; i < tabList.length; i++) {
     try {
       document.querySelector(`.${tabList[i]}-nav`).style.backgroundColor = 'whitesmoke';
@@ -2097,7 +2099,7 @@ function renderTab(tabName) {
   document.querySelector(`.${tabName}-tab`).style.display = '';
 }
 
-function eventHandling() {
+function addCanvasListeners() {
   _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('mousedown', function(e) {
     draggedPoint = mousePos(e);
     isDragging = true;
@@ -2155,6 +2157,42 @@ function eventHandling() {
     e.preventDefault();
   });
 
+  // Trace functionality; show the point on a graph closest to the cursor
+  _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('mousemove', function(e) {
+    let mousePosX = toUnitCoord(mousePos(e).x, 0).x;
+    let mousePosY = toUnitCoord(0, mousePos(e).y).y;
+    let pointY;
+    let pointColor;
+    for (let key in _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions) {
+      let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[key].expression);
+      let y = expr.evaluate({x: mousePosX});
+      if (y > _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMin && y < _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax && Math.abs(mousePos(e).y - Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["toPixelCoord"])(0, y).y) < 50) {
+        if (!pointY || Math.abs(y - mousePosY) < Math.abs(pointY - mousePosY)) {
+          pointY = y
+          pointColor = _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[key].color;
+        }
+      }
+    }
+    // Draw point
+    if (pointY && pointColor) {
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].point.x = mousePosX;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].point.y = pointY;
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].point.color = pointColor;
+    } else {
+      _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].point = {};
+    }
+    Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+  });
+
+  _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].onmouseout = function() {
+    _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].point = {};
+    Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
+  }
+}
+
+function eventHandling() {
+  addCanvasListeners()
+
   // "Add Function" button
   document.querySelector('button[class="add-function"]').addEventListener('click', function() {
     addFunction();
@@ -2211,7 +2249,7 @@ function eventHandling() {
     Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
   });
 
-  let tabList = ['function', 'table', 'trace', 'calculate'];
+  let tabList = ['function', 'table', 'calculate'];
   for (let i = 0; i < tabList.length; i++) {
     document.querySelector(`.${tabList[i]}-nav`).addEventListener('click', function() {
       renderTab(tabList[i]);
@@ -2364,9 +2402,6 @@ __webpack_require__.r(__webpack_exports__);
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 
-canvas.trueHeight = canvas.height;
-canvas.trueWidth = canvas.width;
-
 // Increase canvas resolution
 canvas.scale = 2;
 canvas.width *= canvas.scale;
@@ -2380,7 +2415,8 @@ let view = {
   xMax: 22.5,
   yMin: -22.5,
   yMax: 22.5,
-  functions: {}
+  functions: {},
+  point: {}
 }
 let expression = '';
 
@@ -2558,6 +2594,14 @@ function drawGraph(expr, color = 'black') {
   }
 }
 
+function drawPoint(x, y, color) {
+  let pointX = toPixelCoord(x, 0).x;
+  let pointY = toPixelCoord(0, y).y;
+  draw.colorCircle(pointX, pointY, 5, color);
+  ctx.textAlign = 'left';
+  draw.text(`(${roundTickMark(x)}, ${roundTickMark(y)})`, pointX + 10, pointY + 15)
+}
+
 // graphAroundAsymptote recursively graphs more accurately around asymptotes. It fixes the issue where the curve that approaches asymptotes suddenly cut off
 function graphAroundAsymptote(expr, aX1, aX2, previousDerivative, depth, color) {
   let precision = 2;
@@ -2598,6 +2642,8 @@ function render() {
       console.log(view.functions[key].expression + ' is not a valid function.')
     }
   }
+  // Draws point on graph closest to cursor
+  drawPoint(view.point.x, view.point.y, view.point.color);
   Object(_table_js__WEBPACK_IMPORTED_MODULE_2__["renderTable"])();
 }
 

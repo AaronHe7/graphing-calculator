@@ -1,4 +1,5 @@
 import {canvas, ctx, draw, view, render, toPixelCoord} from './rendering.js'
+import { parseFunction } from './functionParsing.js'
 
 let isDragging = false;
 let numOfFunctions = 0;
@@ -7,8 +8,8 @@ let draggedPoint;
 function mousePos(e) {
   let rect = canvas.getBoundingClientRect();
   return {
-    x: (e.clientX - rect.left) * canvas.trueWidth/(rect.right - rect.left),
-    y: (e.clientY - rect.top) * canvas.trueHeight/(rect.bottom - rect.top)
+    x: (e.clientX - rect.left) * canvas.width/(rect.right - rect.left),
+    y: (e.clientY - rect.top) * canvas.height/(rect.bottom - rect.top)
   };
 }
 
@@ -17,8 +18,8 @@ function toUnitCoord(x, y) {
   let graphWidth = view.xMax - view.xMin;
   let graphHeight = view.yMax - view.yMin;
   return {
-    x: view.xMin + (x/(canvas.trueWidth)) * graphWidth,
-    y: view.yMax - (y/(canvas.trueHeight)) * graphHeight
+    x: view.xMin + (x/(canvas.width)) * graphWidth,
+    y: view.yMax - (y/(canvas.height)) * graphHeight
   };
 }
 
@@ -80,7 +81,7 @@ function graphFunctions() {
 }
 
 function renderTab(tabName) {
-  let tabList = ['function', 'table', 'trace', 'calculate'];
+  let tabList = ['function', 'table', 'calculate'];
   for (let i = 0; i < tabList.length; i++) {
     try {
       document.querySelector(`.${tabList[i]}-nav`).style.backgroundColor = 'whitesmoke';
@@ -93,7 +94,7 @@ function renderTab(tabName) {
   document.querySelector(`.${tabName}-tab`).style.display = '';
 }
 
-function eventHandling() {
+function addCanvasListeners() {
   canvas.addEventListener('mousedown', function(e) {
     draggedPoint = mousePos(e);
     isDragging = true;
@@ -151,6 +152,42 @@ function eventHandling() {
     e.preventDefault();
   });
 
+  // Trace functionality; show the point on a graph closest to the cursor
+  canvas.addEventListener('mousemove', function(e) {
+    let mousePosX = toUnitCoord(mousePos(e).x, 0).x;
+    let mousePosY = toUnitCoord(0, mousePos(e).y).y;
+    let pointY;
+    let pointColor;
+    for (let key in view.functions) {
+      let expr = parseFunction(view.functions[key].expression);
+      let y = expr.evaluate({x: mousePosX});
+      if (y > view.yMin && y < view.yMax && Math.abs(mousePos(e).y - toPixelCoord(0, y).y) < 50) {
+        if (!pointY || Math.abs(y - mousePosY) < Math.abs(pointY - mousePosY)) {
+          pointY = y
+          pointColor = view.functions[key].color;
+        }
+      }
+    }
+    // Draw point
+    if (pointY && pointColor) {
+      view.point.x = mousePosX;
+      view.point.y = pointY;
+      view.point.color = pointColor;
+    } else {
+      view.point = {};
+    }
+    render();
+  });
+
+  canvas.onmouseout = function() {
+    view.point = {};
+    render();
+  }
+}
+
+function eventHandling() {
+  addCanvasListeners()
+
   // "Add Function" button
   document.querySelector('button[class="add-function"]').addEventListener('click', function() {
     addFunction();
@@ -207,7 +244,7 @@ function eventHandling() {
     render();
   });
 
-  let tabList = ['function', 'table', 'trace', 'calculate'];
+  let tabList = ['function', 'table', 'calculate'];
   for (let i = 0; i < tabList.length; i++) {
     document.querySelector(`.${tabList[i]}-nav`).addEventListener('click', function() {
       renderTab(tabList[i]);
