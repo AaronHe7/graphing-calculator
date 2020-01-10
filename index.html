@@ -57,6 +57,26 @@
             <div>Move the graph around to update the table!</div>
             <div style="overflow-x: scroll; width: 300px;"><table></table></div>
           </div>
+          <div class="calculate-tab">
+            <div class="warning"></div>
+            <div class="roots">
+              <h2>Roots</h2>
+              <p>Calculate the x-intercept of a graph</p>
+              Graph: <select class="function-list" name="expression"></select><br>
+              Guess: <input type="text" placeholder="x" name="guess"><br>
+              <button>Calculate</button>
+              <div class="root-output"></div>
+            </div>
+            <div class="intersections">
+              <h2>Intersections</h2>
+              <p>Calculate the intersections of two graphs</p>
+              Graphs: <select class="function-list" name="expression1"></select><select class="function-list" name="expression2"></select><br>
+              Guess: <input type="text" placeholder="x" name="guess"><br><br>
+              <div></div>
+              <button>Calculate</button>
+              <div class="intersection-output"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
