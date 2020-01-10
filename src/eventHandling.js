@@ -1,5 +1,6 @@
 import {canvas, ctx, draw, view, render, toPixelCoord} from './rendering.js'
-import { parseFunction } from './functionParsing.js'
+import { parseFunction } from './functionParsing.js';
+import {renderCalculateTab, addCalculateTabListeners} from './calculate.js';
 
 let isDragging = false;
 let numOfFunctions = 0;
@@ -89,6 +90,9 @@ function renderTab(tabName) {
     } catch(e) {
       console.log(`Tab not found: ${tabList[i]}.`);
     }
+  }
+  if (tabName == 'calculate') {
+    renderCalculateTab();
   }
   document.querySelector(`.${tabName}-nav`).style.backgroundColor = 'lightgray';
   document.querySelector(`.${tabName}-tab`).style.display = '';
@@ -250,6 +254,7 @@ function eventHandling() {
       renderTab(tabList[i]);
     });
   }
+  addCalculateTabListeners();
 }
 
 export { eventHandling, renderTab };

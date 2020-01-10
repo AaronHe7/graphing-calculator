@@ -1,23 +1,6 @@
 import { view } from './rendering.js';
-import { parseFunction } from './functionParsing.js'
-
-function roundTableValue(number) {
-  if (Math.abs(number) == Infinity || number == NaN) {
-    return '';
-  }
-  if (number == 0) {
-    return 0;
-  }
-  if (Math.abs(number) <= 0.0001) {
-    return parseFloat((number).toPrecision(3)).toExponential().replace('e', '*10^');
-  }
-  if (Math.abs(number) >= 100000) {
-    return number.toPrecision(3).replace('e+', '*10^');
-  }
-  if (Math.abs(number) < 100000) {
-    return parseFloat((number).toPrecision(3));
-  }
-}
+import { parseFunction } from './functionParsing.js';
+import { roundValue } from './math.js';
 
 function renderTable() {
   let tableElement = document.querySelector('table');
@@ -45,13 +28,13 @@ function renderTable() {
     let x = tblMin + (tblMax - tblMin) * i/numberOfValues;
     let tableRow = document.createElement('tr');
     let xColumn = document.createElement('td');
-    xColumn.textContent = roundTableValue(x);
+    xColumn.textContent = roundValue(x);
     tableRow.appendChild(xColumn);
 
     for (let key in view.functions) {
       let yColumn = document.createElement('td');
       let expr = parseFunction(view.functions[key].expression);
-      yColumn.textContent = roundTableValue(expr.evaluate({x}));
+      yColumn.textContent = roundValue(expr.evaluate({x}));
 
       tableRow.appendChild(yColumn);
     }

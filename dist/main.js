@@ -1940,6 +1940,130 @@ var index = {
 
 /***/ }),
 
+/***/ "./src/calculate.js":
+/*!**************************!*\
+  !*** ./src/calculate.js ***!
+  \**************************/
+/*! exports provided: addCalculateTabListeners, renderCalculateTab */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addCalculateTabListeners", function() { return addCalculateTabListeners; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderCalculateTab", function() { return renderCalculateTab; });
+/* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+/* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
+/* harmony import */ var _math_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./math.js */ "./src/math.js");
+
+
+
+
+function calculateRoot(f, guess) {
+  let root = newtonsMethod(f, guess);
+  let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_0__["parseFunction"])(f);
+  if (Math.abs(expr.evaluate({x: root})) < Math.pow(10, -10)) {
+    return root;
+  } else {
+    return null;
+  }
+}
+
+// Calculate the intercections of two graphs, f and g, by calculating the root of f - g.
+function calculateIntersection(f1, f2, guess, depth = 100) {
+  let expr1 = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_0__["parseFunction"])(f1);
+  let expr2 = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_0__["parseFunction"])(f2);
+
+  if (depth == 0) {
+    if (Math.abs(expr1.evaluate({x: guess}) - expr2.evaluate({x: guess})) < Math.pow(10, -10)) {
+      return {x: guess, y: expr1.evaluate({x: guess})}
+    } else {
+      return null;
+    }
+  }
+
+  let x = guess;
+  let y1 = expr1.evaluate({x});
+  let y2 = expr2.evaluate({x});
+  let y = y1 - y2;
+  let deltaX = Math.pow(10, -5);
+  let deltaY = expr1.evaluate({x: x + deltaX}) - expr2.evaluate({x: x + deltaX}) - y;
+  let derivative = deltaY/deltaX;
+  let nextGuess = x - y/derivative;
+  return calculateIntersection(f1, f2, nextGuess, depth - 1);
+}
+
+// Approximates the x-intercept of a function given a guess
+function newtonsMethod(f, guess, depth = 100) {
+  if (depth == 0) {
+    return guess;
+  }
+  let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_0__["parseFunction"])(f);
+  let x = guess;
+  let y = expr.evaluate({x});
+  let deltaX = Math.pow(10, -5);
+  let deltaY = expr.evaluate({x: x + deltaX}) - y;
+  let derivative = deltaY/deltaX;
+  let nextGuess = x - y/derivative;
+  return newtonsMethod(f, nextGuess, depth - 1);
+}
+
+function renderCalculateTab() {
+  let selects = document.querySelectorAll('.function-list');
+  let enteredFunction = false;
+  for (let i = 0; i < selects.length; i++) {
+    let selectElement = selects[i];
+    selectElement.innerHTML = '';
+    for (let key in _rendering_js__WEBPACK_IMPORTED_MODULE_1__["view"].functions) {
+      enteredFunction = true;
+      let optionElement = document.createElement('option');
+      let expression = _rendering_js__WEBPACK_IMPORTED_MODULE_1__["view"].functions[key].expression;
+      optionElement.value = expression;
+      optionElement.textContent = expression;
+      selectElement.appendChild(optionElement);
+    }
+  }
+  if (!enteredFunction) {
+    document.querySelector('.calculate-tab .warning').textContent = 'Please enter a function in the "Functions" tab.';
+  }
+  else {
+    document.querySelector('.calculate-tab .warning').textContent = '';
+  }
+}
+
+function addCalculateTabListeners() {
+  // Calculate root button
+  document.querySelector('.roots > button').addEventListener('click', function() {
+    let outputDiv = document.querySelector('.roots > .root-output');
+    let guess = parseFloat(document.querySelector('.roots > input[name="guess"]').value);
+    let expression = document.querySelector('.roots > select[name="expression"]').value;
+    let root = calculateRoot(expression, guess);
+    if (root != null) {
+      outputDiv.textContent = `Root: (${Object(_math_js__WEBPACK_IMPORTED_MODULE_2__["roundValue"])(root, 6)}, 0)`;
+    } else {
+      outputDiv.textContent = 'Root not found';
+    }
+  });
+
+  document.querySelector('.intersections > button').addEventListener('click', function() {
+    let outputDiv = document.querySelector('.intersections > .intersection-output');
+    let guess = parseFloat(document.querySelector('.intersections > input[name="guess"]').value);
+    let expression1 = document.querySelector('.intersections > select[name="expression1"]').value;
+    let expression2 = document.querySelector('.intersections > select[name="expression2"]').value;
+    let intersection = calculateIntersection(expression1, expression2, guess);
+
+    if (intersection != null) {
+      outputDiv.textContent = `Intersection: (${Object(_math_js__WEBPACK_IMPORTED_MODULE_2__["roundValue"])(intersection.x, 6)}, ${Object(_math_js__WEBPACK_IMPORTED_MODULE_2__["roundValue"])(intersection.y, 6)})`;
+    } else {
+      outputDiv.textContent = 'Intersection not found or graphs are equivalent';
+    }
+  });
+}
+
+
+
+
+/***/ }),
+
 /***/ "./src/drawing.js":
 /*!************************!*\
   !*** ./src/drawing.js ***!
@@ -2003,6 +2127,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTab", function() { return renderTab; });
 /* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
 /* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+/* harmony import */ var _calculate_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./calculate.js */ "./src/calculate.js");
+
 
 
 
@@ -2094,6 +2220,9 @@ function renderTab(tabName) {
     } catch(e) {
       console.log(`Tab not found: ${tabList[i]}.`);
     }
+  }
+  if (tabName == 'calculate') {
+    Object(_calculate_js__WEBPACK_IMPORTED_MODULE_2__["renderCalculateTab"])();
   }
   document.querySelector(`.${tabName}-nav`).style.backgroundColor = 'lightgray';
   document.querySelector(`.${tabName}-tab`).style.display = '';
@@ -2255,6 +2384,7 @@ function eventHandling() {
       renderTab(tabList[i]);
     });
   }
+  Object(_calculate_js__WEBPACK_IMPORTED_MODULE_2__["addCalculateTabListeners"])();
 }
 
 
@@ -2371,6 +2501,39 @@ __webpack_require__.r(__webpack_exports__);
 Object(_eventHandling_js__WEBPACK_IMPORTED_MODULE_1__["renderTab"])('function');
 Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
 Object(_eventHandling_js__WEBPACK_IMPORTED_MODULE_1__["eventHandling"])();
+
+
+/***/ }),
+
+/***/ "./src/math.js":
+/*!*********************!*\
+  !*** ./src/math.js ***!
+  \*********************/
+/*! exports provided: roundValue */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "roundValue", function() { return roundValue; });
+function roundValue(number, precision = 3) {
+  if (Math.abs(number) == Infinity || number == NaN) {
+    return '';
+  }
+  if (number == 0) {
+    return 0;
+  }
+  if (Math.abs(number) <= 0.0001) {
+    return parseFloat((number).toPrecision(precision)).toExponential().replace('e', '*10^');
+  }
+  if (Math.abs(number) >= 100000) {
+    return number.toPrecision(precision).replace('e+', '*10^');
+  }
+  if (Math.abs(number) < 100000) {
+    return parseFloat((number).toPrecision(precision));
+  }
+}
+
+
 
 
 /***/ }),
@@ -2574,6 +2737,10 @@ function drawGraph(expr, color = 'black') {
     let currentY = expr.evaluate({ x: currentX });
     let nextY = expr.evaluate({ x: nextX });
 
+    if (!currentY && !nextY) {
+      continue;
+    }
+
     // When the derivative of the graph changes from positive to negative, assume that it's trying to graph an asymptote
     let currentDerivative = (nextY - currentY)/(nextX - currentX);
     if (currentDerivative * previousDerivative >= 0) {
@@ -2581,7 +2748,7 @@ function drawGraph(expr, color = 'black') {
     // Graphs more precisely around asymptotes. Fixes issue where lines that approach asymptotes suddenly cut off
     } else {
       // If curve approaches asymptote from left side
-      if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
+      if (Math.abs(previousDerivative) < Math.abs(currentDerivative) || !currentDerivative) {
         graphAroundAsymptote(expr, currentX, nextX, previousDerivative, 20, color);
       // If curve approaches asymptote from right side
       } else {
@@ -2664,26 +2831,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderTable", function() { return renderTable; });
 /* harmony import */ var _rendering_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rendering.js */ "./src/rendering.js");
 /* harmony import */ var _functionParsing_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./functionParsing.js */ "./src/functionParsing.js");
+/* harmony import */ var _math_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./math.js */ "./src/math.js");
 
 
 
-function roundTableValue(number) {
-  if (Math.abs(number) == Infinity || number == NaN) {
-    return '';
-  }
-  if (number == 0) {
-    return 0;
-  }
-  if (Math.abs(number) <= 0.0001) {
-    return parseFloat((number).toPrecision(3)).toExponential().replace('e', '*10^');
-  }
-  if (Math.abs(number) >= 100000) {
-    return number.toPrecision(3).replace('e+', '*10^');
-  }
-  if (Math.abs(number) < 100000) {
-    return parseFloat((number).toPrecision(3));
-  }
-}
 
 function renderTable() {
   let tableElement = document.querySelector('table');
@@ -2711,13 +2862,13 @@ function renderTable() {
     let x = tblMin + (tblMax - tblMin) * i/numberOfValues;
     let tableRow = document.createElement('tr');
     let xColumn = document.createElement('td');
-    xColumn.textContent = roundTableValue(x);
+    xColumn.textContent = Object(_math_js__WEBPACK_IMPORTED_MODULE_2__["roundValue"])(x);
     tableRow.appendChild(xColumn);
 
     for (let key in _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions) {
       let yColumn = document.createElement('td');
       let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[key].expression);
-      yColumn.textContent = roundTableValue(expr.evaluate({x}));
+      yColumn.textContent = Object(_math_js__WEBPACK_IMPORTED_MODULE_2__["roundValue"])(expr.evaluate({x}));
 
       tableRow.appendChild(yColumn);
     }

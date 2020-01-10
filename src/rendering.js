@@ -1,7 +1,7 @@
 // Problem: computers with bigger monitors
 import { Draw } from './drawing.js';
 import { parseFunction } from './functionParsing.js';
-import { renderTable } from './table.js'
+import { renderTable } from './table.js';
 
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
@@ -178,6 +178,10 @@ function drawGraph(expr, color = 'black') {
     let currentY = expr.evaluate({ x: currentX });
     let nextY = expr.evaluate({ x: nextX });
 
+    if (!currentY && !nextY) {
+      continue;
+    }
+
     // When the derivative of the graph changes from positive to negative, assume that it's trying to graph an asymptote
     let currentDerivative = (nextY - currentY)/(nextX - currentX);
     if (currentDerivative * previousDerivative >= 0) {
@@ -185,7 +189,7 @@ function drawGraph(expr, color = 'black') {
     // Graphs more precisely around asymptotes. Fixes issue where lines that approach asymptotes suddenly cut off
     } else {
       // If curve approaches asymptote from left side
-      if (Math.abs(previousDerivative) < Math.abs(currentDerivative)) {
+      if (Math.abs(previousDerivative) < Math.abs(currentDerivative) || !currentDerivative) {
         graphAroundAsymptote(expr, currentX, nextX, previousDerivative, 20, color);
       // If curve approaches asymptote from right side
       } else {

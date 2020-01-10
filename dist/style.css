@@ -25,6 +25,7 @@ button {
   font-size: 15px;
 }
 
+
 #function-template {
   display: none
 }
@@ -122,6 +123,21 @@ button {
 
 .table-tab {
   text-align: center;
+}
+
+.calculate-tab input {
+  margin: 10px 0;
+  padding: 5px;
+}
+
+.calculate-tab select {
+  width: 80px;
+  margin: 5px;
+  padding: 5px;
+}
+
+.warning {
+  color: red;
 }
 
 table {
