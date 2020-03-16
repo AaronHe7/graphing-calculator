@@ -2260,6 +2260,7 @@ function addCanvasListeners() {
 
   // Zooming in and out
   _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('wheel', function(e) {
+    e.preventDefault();
     let currentPos = mousePos(e);
     let gridPos = toUnitCoord(currentPos.x, currentPos.y);
 
@@ -2283,7 +2284,6 @@ function addCanvasListeners() {
       _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].yMax -= distFromTop * factor;
     }
     Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
-    e.preventDefault();
   });
 
   // Trace functionality; show the point on a graph closest to the cursor
@@ -2412,6 +2412,7 @@ String.prototype.add = function(index, string) {
 }
 
 function parseFunction(expression) {
+  expression = expression.split(' ').join('');
   expression = logify(expression);
   expression = addMultiplySymbols(expression);
   return parser.parse(expression);
@@ -2868,6 +2869,9 @@ function renderTable() {
     for (let key in _rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions) {
       let yColumn = document.createElement('td');
       let expr = Object(_functionParsing_js__WEBPACK_IMPORTED_MODULE_1__["parseFunction"])(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["view"].functions[key].expression);
+      if (!expr) {
+        continue
+      }
       yColumn.textContent = Object(_math_js__WEBPACK_IMPORTED_MODULE_2__["roundValue"])(expr.evaluate({x}));
 
       tableRow.appendChild(yColumn);

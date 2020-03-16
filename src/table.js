@@ -34,6 +34,9 @@ function renderTable() {
     for (let key in view.functions) {
       let yColumn = document.createElement('td');
       let expr = parseFunction(view.functions[key].expression);
+      if (!expr) {
+        continue
+      }
       yColumn.textContent = roundValue(expr.evaluate({x}));
 
       tableRow.appendChild(yColumn);

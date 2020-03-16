@@ -8,6 +8,7 @@ String.prototype.add = function(index, string) {
 }
 
 function parseFunction(expression) {
+  expression = expression.split(' ').join('');
   expression = logify(expression);
   expression = addMultiplySymbols(expression);
   return parser.parse(expression);

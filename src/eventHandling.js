@@ -130,6 +130,7 @@ function addCanvasListeners() {
 
   // Zooming in and out
   canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
     let currentPos = mousePos(e);
     let gridPos = toUnitCoord(currentPos.x, currentPos.y);
 
@@ -153,7 +154,6 @@ function addCanvasListeners() {
       view.yMax -= distFromTop * factor;
     }
     render();
-    e.preventDefault();
   });
 
   // Trace functionality; show the point on a graph closest to the cursor
