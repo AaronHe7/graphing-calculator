@@ -82,7 +82,7 @@ button {
   flex-direction: column;
   height: 200px;
   overflow-y: auto;
-  width: 300px;
+  width: 400px;
   align-items: center;
 }
 
@@ -103,6 +103,7 @@ button {
   padding: 5px;
   margin: 10px 0;
   font-size: 15px;
+  width: 160px;
 }
 
 .function-tab select {

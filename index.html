@@ -14,7 +14,7 @@
         <div class="subtitle">Created by Aaron He</div>
       </div>
       <div class="tab">Home</div>
-      <div class="tab"><a href="https://github.com/AaronHe7/graphing-calculator/">Github</a></div>
+      <div class="tab"><a href="https://github.com/AaronHe7/graphing-calculator/" target="_blank">Github</a></div>
       <div class="tab">About</div>
     </header>
     <div class="calculator">
@@ -30,7 +30,7 @@
             <h2>Functions</h2>
             <div class="functions">
               <div id="function-template">
-                <input type="text">
+                y = <input type="text">
                 <select>
                   <option value="blue">Blue</option>
                   <option value="red">Red</option>
@@ -79,6 +79,14 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="about-page"></div>
+      <h1>About</h1>
+      <p>This is a graphing calculator created using mainly JavaScript, meant to share similar functions to the TI-84 calculator. This graphing calculator graph any polynomial, logarithmic, trigonometric, and exponential function. Additionally, it can calculate the roots and intercepts of the functions off of an inital guess. This webpage uses webpack for organisation, and a library called <a href="https://www.npmjs.com/package/expr-eval">expr-eval</a>. For more details, read the README.md on the <a href="https://github.com/AaronHe7/graphing-calculator/" target="blank">Github page</a>.</p>
+      <h2>Example</h2>
+      <div>Function: y = x^2 - x - 10</div>
+      <img alt="x^2-x-10" src="img/f1.png" height="400">
+      <p> Using the root section of the "calculate" tab, we can calculate the roots. Using an inital guess of -3, we can get the approximation for the negative root, which is -2.70156. To calculate the positive root, we can instead use an inital guess of 4, outputting 3.70156. These are very close to the exact roots, (1±√41)/2.
     </div>
     <script src="main.js"></script>
   </body>
