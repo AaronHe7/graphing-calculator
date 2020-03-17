@@ -2211,6 +2211,7 @@ function graphFunctions() {
   Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
 }
 
+// Render calculator options tab (graph, table, calculate)
 function renderTab(tabName) {
   let tabList = ['function', 'table', 'calculate'];
   for (let i = 0; i < tabList.length; i++) {
@@ -2227,6 +2228,25 @@ function renderTab(tabName) {
   document.querySelector(`.${tabName}-nav`).style.backgroundColor = 'lightgray';
   document.querySelector(`.${tabName}-tab`).style.display = '';
 }
+
+// Render tabs in the navbar
+function renderNavBarTab(tabName) {
+  let tabList = ['home', 'about'];
+  for (let i = 0; i < tabList.length; i++) {
+    let tab = tabList[i];
+    let tabDiv = document.querySelector('.' + tab + '-page');
+    let tabLinkDiv = document.getElementById(tab)
+    if (tab == tabName) {
+      tabDiv.style.display = '';
+      tabLinkDiv.style.fontWeight = 'bold';
+    } else {
+      tabDiv.style.display = 'none';
+      tabLinkDiv.style.fontWeight = 'normal';
+    }
+  }
+}
+
+renderNavBarTab('home');
 
 function addCanvasListeners() {
   _rendering_js__WEBPACK_IMPORTED_MODULE_0__["canvas"].addEventListener('mousedown', function(e) {
@@ -2378,6 +2398,7 @@ function eventHandling() {
     Object(_rendering_js__WEBPACK_IMPORTED_MODULE_0__["render"])();
   });
 
+  // render tabs
   let tabList = ['function', 'table', 'calculate'];
   for (let i = 0; i < tabList.length; i++) {
     document.querySelector(`.${tabList[i]}-nav`).addEventListener('click', function() {
@@ -2385,6 +2406,13 @@ function eventHandling() {
     });
   }
   Object(_calculate_js__WEBPACK_IMPORTED_MODULE_2__["addCalculateTabListeners"])();
+
+  let tabListNav = ['home', 'about'];
+  for (let i = 0; i < tabListNav.length; i++) {
+    document.querySelector(`#${tabListNav[i]}`).addEventListener('click', function() {
+      renderNavBarTab(tabListNav[i]);
+    });
+  }
 }
 
 

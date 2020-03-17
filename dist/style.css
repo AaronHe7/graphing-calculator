@@ -19,6 +19,11 @@ header img {
   margin: 0 20px;
 }
 
+header a {
+  color: inherit;
+  text-decoration: none;
+}
+
 button {
   margin: 15px 0;
   padding: 8px;
@@ -45,12 +50,17 @@ button {
 
 .tab {
   margin: 0 20px;
+  cursor: pointer;
 }
 
 .calculator {
   display: flex;
   margin: auto;
   justify-content: center;
+}
+
+.about-page {
+  margin: 50px;
 }
 
 .controls {
