@@ -13,11 +13,11 @@
         <div class="title">Graphing Calculator</div>
         <div class="subtitle">Created by Aaron He</div>
       </div>
-      <div class="tab">Home</div>
+      <div class="tab" id="home">Home</div>
       <div class="tab"><a href="https://github.com/AaronHe7/graphing-calculator/" target="_blank">Github</a></div>
-      <div class="tab">About</div>
+      <div class="tab" id="about">About</div>
     </header>
-    <div class="calculator">
+    <div class="calculator home-page">
       <canvas height="600" width="600" id="canvas"></canvas>
       <div class="controls">
         <div class="navigator">
@@ -80,7 +80,7 @@
         </div>
       </div>
     </div>
-    <div class="about-page"></div>
+    <div class="about-page">
       <h1>About</h1>
       <p>This is a graphing calculator created using mainly JavaScript, meant to share similar functions to the TI-84 calculator. This graphing calculator graph any polynomial, logarithmic, trigonometric, and exponential function. Additionally, it can calculate the roots and intercepts of the functions off of an inital guess. This webpage uses webpack for organisation, and a library called <a href="https://www.npmjs.com/package/expr-eval">expr-eval</a>. For more details, read the README.md on the <a href="https://github.com/AaronHe7/graphing-calculator/" target="blank">Github page</a>.</p>
       <h2>Example</h2>
