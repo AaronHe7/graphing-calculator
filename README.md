@@ -18,7 +18,7 @@ This project is a graphing calculator made using JavaScript, inspired by the TI-
   * [ Calculate ](#calculate)
 * [ Newton's method ](#newtons-method)
   * [ Explanation ](#explanation)
-* [ Application examples ](#application)
+* [ Applications ](#applications)
 
 <a name="features"></a>
 ## Features
@@ -69,4 +69,18 @@ Now we can compute *x<sub>1</sub>* by hand from our initial guess *x<sub>0</sub>
 
  *x<sub>1</sub> = 2 - f'(2)/f(2) = 2 - (2<sup>2</sup> - 8(2) + 4)/(2(2) - 8) = 2 - (-8)/(-4) = 0.* This is much closer than our initial guess *x<sub>0</sub> = 2*. We can repeat this process as many times as possible for an answer more precise than ever needed.
 
- 
+<a name="applications"></a>
+## Applications
+### Modeling the throw of a ball
+Suppose a ball is thrown straight up at *5m/s*, from *1m* above the ground with a gravity of *-10m/s<sup>2</sup>*. Then the equation, *y = -5x^2 + 5x + 1* models the height of the ball (y-axis) with respect to time (x-axis). Here is the graph:
+
+<img src="dist/img/ball-throw.png" alt="ball graph" width="200px">
+
+Now we can use the calculator to answer two questions:
+
+1. At what time does the ball hit the ground again?
+2. What is the maximum height of the ball, and at what time is it achieved?
+
+To answer the first question, use the calculate root function and input a guess of *1*. This gives the root *x = 1.17082*, so 1.17082 seconds.
+
+For the second question, find the leftmost root with a guess of *-1*, which gives *x = -0.17082*. Now we can average the two times to get the time where the maximum height is achieved, which is at (1.17082 - 0.17082)/2 = 0.5 seconds. Now open the table tab to find that the *y* value at *x = 0.5* is 2.25. Our answer is 0.5 seconds and 2.25 meters.
